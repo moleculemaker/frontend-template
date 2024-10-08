@@ -1,16 +1,25 @@
 # Frontend Template
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.7.
+This Repo is intended to be used as a template frontend repo for all moleculemaker frontends.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.7. 
 
 ## Bootstrap
 
 1. Clone repo to local machine
-2. Run `npm install` to install the dependencies
-3. Run `ng g @moleculemaker/ui-lib:deployment` to generate deployment configuration for the app. You will be prompted to enter the app name.
+2. Run `npm i` to install the dependencies
+3. Run `npm run init` to generate deployment configuration for the app. You will be prompted to enter the app name.
 
-## Code Generator
+## Utilities
 
-This repo includes a package that generates job input, loading, and result pages at ease. To use, run `ng g @moleculemaker/ui-lib:mmli-job`. You will be prompted to enter the job name and service name. The service name by default is the app name.
+This repo includes a library that helps build frontend pages quickly.
+
+- Code Generator:
+  Command: `ng g @moleculemaker/ui-lib:mmli-job`
+  Effect: Generate a template job input page, loading page, and result page
+
+- UI Library
+  All builtin components are inside `src/app/components` folder.
+  Component Preview (WIP): use storybook
 
 ## Development server
 
