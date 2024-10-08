@@ -15,7 +15,9 @@
     "openapi:sync:local": "curl http://localhost:8080/openapi.json > openapi/mmli-backend.openapi.json && cat openapi/mmli-backend.openapi.json",
     "openapi:live:local": "npm run openapi:sync:local && npm run openapi",
     "storybook": "ng run test:storybook",
-    "build-storybook": "ng run test:build-storybook"
+    "build-storybook": "ng run test:build-storybook",
+    "cy:open": "npx cypress open",
+    "cy:run": "npx cypress run"
   },
   "private": true,
   "dependencies": {
