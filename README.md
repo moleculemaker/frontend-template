@@ -11,14 +11,22 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Utilities
 
-This repo includes a library that helps build frontend pages quickly.
+This repo includes a library that helps build frontend application quickly.
 
 - Code Generator:
-  Command: `ng g @moleculemaker/ui-lib:mmli-job`
-  Effect: Generate a template job input page, loading page, and result page
+
+  - Command: `ng g @moleculemaker/ui-lib:mmli-job`
+
+    Effect: Generate a template job input page, loading page, and result page
+
+  - Command: `ng g @moleculemaker/ui-lib:deployment`
+ 
+    Effect: Generate an application with ArgoCD deployment configuation.
 
 - UI Library
+
   All builtin components are inside `src/app/components` folder.
+
   Component Preview (WIP): use storybook
 
 ## Development server
