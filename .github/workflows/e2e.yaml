@@ -1,5 +1,20 @@
 name: End-to-end tests
-on: push
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+
+  # Trigger the workflow on release activity
+  release:
+    # Only use the types keyword to narrow down the activity types that will trigger your workflow.
+    types:
+      - published
+      - edited
+      - created
+
 jobs:
   cypress-run:
     runs-on: ubuntu-22.04
