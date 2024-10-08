@@ -43,3 +43,4 @@ Thumbs.db
 chart/charts/
 
 .env
+*storybook.log

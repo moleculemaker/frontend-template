@@ -12,7 +12,7 @@ import { NgIf } from '@angular/common';
     imports: [TabMenuModule, PrimeTemplate, NgIf]
 })
 export class JobTabComponent implements OnChanges {
-  @Input() tab: string;
+  @Input() tab: 'input' | 'result' = 'input';
   @Output() onTabChange = new EventEmitter<"input" | "result">();
 
   jobId = this.router.url.split(/\/.*\/result\//).length > 1 
