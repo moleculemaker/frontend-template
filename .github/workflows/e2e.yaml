@@ -1,29 +1,23 @@
-name: End-to-end tests
+name: End-to-end Tests
 on:
   push:
-    branches:
-      - main
-      - develop
-
+    branches: [main, develop]
   pull_request:
-
-  # Trigger the workflow on release activity
   release:
-    # Only use the types keyword to narrow down the activity types that will trigger your workflow.
-    types:
-      - published
-      - edited
-      - created
+    types: [published, edited, created]
 
 jobs:
-  cypress-run:
+  e2e-tests:
     runs-on: ubuntu-22.04
-    permissions: read-all
+    strategy:
+      matrix:
+        browser: [chrome, firefox, edge]
+    name: E2E on ${{ matrix.browser }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Authenticate with private NPM package
+      - name: Authenticate with private NPM packages
         run: |
           echo "//hub.chemaxon.com/artifactory/api/npm/npm/:_auth=${{ secrets.NPM_TOKEN }}" > $HOME/.npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> $HOME/.npmrc
@@ -31,3 +25,6 @@ jobs:
 
       - name: Cypress run
         uses: cypress-io/github-action@v6
+        with:
+          browser: ${{ matrix.browser }}
+
