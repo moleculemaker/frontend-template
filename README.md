@@ -29,11 +29,19 @@ This repo includes a library that helps build frontend application quickly.
 
   All builtin components are inside `src/app/components` folder.
 
-  Component Preview (WIP): use storybook
+  Component Preview (WIP):  `npm run storybook` to start the storybook server. Visit `http://localhost:6006/` to preview the components.
+
+- E2E Testing: 
+
+  A cypress project is included to facilitate e2e testing in `cypress` folder
+
+  `npm run cy:open` to open the cypress app for e2e testing.
+
+  `npm run cy:run` to run the e2e tests in a headless browser.
 
 ## Development server
 
-For marvin.js license add the following lines to the ~/.npmrc file:
+For marvin.js license and github package registry, add the following lines to the ~/.npmrc file:
 ```
 @chemaxon:registry=https://hub.chemaxon.com/artifactory/api/npm/npm/
 hub.chemaxon.com/artifactory/api/npm/npm/:_auth="<auth>"
@@ -41,6 +49,9 @@ hub.chemaxon.com/artifactory/api/npm/npm/:_password="<password>"
 hub.chemaxon.com/artifactory/api/npm/npm/:username=<user>
 hub.chemaxon.com/artifactory/api/npm/npm/:email=<email>
 hub.chemaxon.com/artifactory/api/npm/npm/:always-auth=true
+
+@github:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=<authToken>
 ```
 
 MMLI members can reach out to developers for the secrets. Non-MMLI members will need to make their own arrangements for a MarvinJS license.
