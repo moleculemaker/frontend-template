@@ -45,5 +45,4 @@ chart/charts/
 .env
 *storybook.log
 
-
 .secrets

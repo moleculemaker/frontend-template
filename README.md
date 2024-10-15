@@ -17,11 +17,11 @@ This repo includes a library that helps build frontend application quickly.
 
 - Code Generator:
 
-  - Command: `ng g @moleculemaker/ui-lib:mmli-job`
+  - Command: `ng g @moleculemaker/dev-tool:mmli-job`
 
     Effect: Generate a template job input page, loading page, and result page
 
-  - Command: `ng g @moleculemaker/ui-lib:deployment`
+  - Command: `ng g @moleculemaker/dev-tool:deployment`
  
     Effect: Generate an application with ArgoCD deployment configuation.
 
