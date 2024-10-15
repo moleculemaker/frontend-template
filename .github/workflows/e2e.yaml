@@ -18,6 +18,8 @@ on:
 jobs:
   cypress-run:
     runs-on: ubuntu-22.04
+    permissions:
+      packages: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
