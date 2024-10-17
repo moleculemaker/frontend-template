@@ -27,6 +27,7 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           browser: ${{ matrix.browser }}
+          install-command: npm i
           start: npm start
           wait-on: 'http://localhost:4200'
         env:
