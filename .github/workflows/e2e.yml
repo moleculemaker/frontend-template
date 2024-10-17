@@ -27,6 +27,8 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           browser: ${{ matrix.browser }}
+          start: npm start
+          wait-on: 'http://localhost:4200'
         env:
           CYPRESS_host: localhost
           CYPRESS_port: 4200
