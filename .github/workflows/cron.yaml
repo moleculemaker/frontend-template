@@ -9,10 +9,9 @@ jobs:
     strategy:
       matrix:
         browser: [chrome, firefox, edge]
-        env: [
-          https://aceretro.frontend.staging.mmli1.ncsa.illinois.edu,
-          https://aceretro.platform.moleculemaker.org,
-        ]
+        url:
+          - https://aceretro.frontend.staging.mmli1.ncsa.illinois.edu,
+          - https://aceretro.platform.moleculemaker.org,
 
     name: E2E on ${{ matrix.browser }}
     steps:
@@ -30,4 +29,4 @@ jobs:
         with:
           browser: ${{ matrix.browser }}
         env:
-          BASE_URL: ${{ matrix.env }}
+          BASE_URL: ${{ matrix.url }}
