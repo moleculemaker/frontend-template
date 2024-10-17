@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         browser: [chrome, firefox, edge]
+        env: http://localhost:4200
     name: E2E on ${{ matrix.browser }}
     steps:
       - name: Checkout
