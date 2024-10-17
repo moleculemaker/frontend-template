@@ -1,7 +1,9 @@
-name: End-to-end Tests (Cron)
+name: Cron
 on:
   schedule:
     - cron: '10 * * * *'
+  workflow_dispatch:
+    
 
 jobs:
   e2e-tests:
@@ -10,8 +12,8 @@ jobs:
       matrix:
         browser: [chrome, firefox, edge]
         url:
-          - https://aceretro.frontend.staging.mmli1.ncsa.illinois.edu,
-          - https://aceretro.platform.moleculemaker.org,
+          - https://aceretro.frontend.staging.mmli1.ncsa.illinois.edu
+          - https://aceretro.platform.moleculemaker.org
 
     name: E2E on ${{ matrix.browser }}
     steps:
