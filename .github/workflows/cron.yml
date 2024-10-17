@@ -11,8 +11,8 @@ jobs:
       matrix:
         browser: [chrome, firefox, edge]
         env:
-          - https://aceretro.frontend.staging.mmli1.ncsa.illinois.edu
-          - https://aceretro.platform.moleculemaker.org
+          - aceretro.frontend.staging.mmli1.ncsa.illinois.edu
+          - aceretro.platform.moleculemaker.org
     name: E2E on ${{ matrix.browser }} (Cron)
     steps:
       - name: Checkout
@@ -29,4 +29,4 @@ jobs:
         with:
           browser: ${{ matrix.browser }}
         env:
-          BASE_URL: ${{ matrix.url }}
+          CYPRESS_host: ${{ matrix.env }}

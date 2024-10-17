@@ -12,7 +12,6 @@ jobs:
     strategy:
       matrix:
         browser: [chrome, firefox, edge]
-        env: http://localhost:4200
     name: E2E on ${{ matrix.browser }}
     steps:
       - name: Checkout
@@ -28,3 +27,6 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           browser: ${{ matrix.browser }}
+        env:
+          CYPRESS_host: localhost
+          CYPRESS_port: 4200

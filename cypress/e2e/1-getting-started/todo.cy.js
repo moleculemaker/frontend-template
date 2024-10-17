@@ -17,10 +17,10 @@ describe('example to-do app', () => {
     // so we must tell it to visit our website with the `cy.visit()` command.
     // Since we want to visit the same URL at the start of all our tests,
     // we include it in our beforeEach function so that it runs before each test
-    cy.visit(Cypress.env('BASE_URL'))
+    cy.visit(Cypress.env('host'))
   })
 
   it('works', () => {
-    console.log('env', Cypress.env('BASE_URL'))
+    console.log('env', Cypress.env('host'))
   })
 })
