@@ -13,9 +13,9 @@
 
 // add environment variables
 require('dotenv').config();
-const CHROMEWEBDRIVER = process.env.CHROMEWEBDRIVER;
-const GECKOWEBDRIVER = process.env.GECKOWEBDRIVER;
-const EDGEWEBDRIVER = process.env.EDGEWEBDRIVER;
+const CHROMEWEBDRIVER = process.env.CHROMEWEBDRIVER + '/chromedriver';
+const GECKOWEBDRIVER = process.env.GECKOWEBDRIVER + '/geckodriver';
+const EDGEWEBDRIVER = process.env.EDGEWEBDRIVER + '/msedgedriver';
 
 
 module.exports = {
