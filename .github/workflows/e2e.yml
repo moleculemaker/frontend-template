@@ -97,7 +97,7 @@ jobs:
 
       - name: Start application and run tests
         with:
-          run: |
+          main: |
             # check if WEBDRIVER has right permission
             ls -l $WEBDRIVER
             sudo chmod a+x $WEBDRIVER
