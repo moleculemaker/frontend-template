@@ -46,3 +46,4 @@ chart/charts/
 *storybook.log
 
 .secrets
+tests_output/
