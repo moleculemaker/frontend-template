@@ -1,0 +1,35 @@
+name: End-to-end Tests
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  release:
+    types: [published, edited, created]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        browser: [chrome, firefox, edge]
+
+    name: E2E on ${{ matrix.browser }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate with private NPM packages
+        run: |
+          echo "//hub.chemaxon.com/artifactory/api/npm/npm/:_auth=${{ secrets.NPM_TOKEN }}" > $HOME/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> $HOME/.npmrc
+          echo "npmrc_path=$HOME/.npmrc" >> "$GITHUB_ENV"
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          browser: ${{ matrix.browser }}
+          start: npm start
+          wait-on: 'http://localhost:4200'
+        env:
+          CYPRESS_host: localhost
+          CYPRESS_port: 4200

@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "init": "ng g @moleculemaker/ui-lib:deployment && npm run openapi:live",
+    "init": "ng g @moleculemaker/dev-tool:deployment && npm run openapi:live",
     "openapi:clean": "rm -rf src/app/api/",
     "openapi": "openapi-generator-cli generate --skip-validate-spec -i openapi/mmli-backend.openapi.json -g typescript-angular -o src/app/api/mmli-backend/v1",
     "openapi:sync": "curl https://mmli.fastapi.staging.mmli1.ncsa.illinois.edu/openapi.json > openapi/mmli-backend.openapi.json && cat openapi/mmli-backend.openapi.json",
@@ -15,7 +15,9 @@
     "openapi:sync:local": "curl http://localhost:8080/openapi.json > openapi/mmli-backend.openapi.json && cat openapi/mmli-backend.openapi.json",
     "openapi:live:local": "npm run openapi:sync:local && npm run openapi",
     "storybook": "ng run test:storybook",
-    "build-storybook": "ng run test:build-storybook"
+    "build-storybook": "ng run test:build-storybook",
+    "cy:open": "npx cypress open",
+    "cy:run": "npx cypress run"
   },
   "private": true,
   "dependencies": {
@@ -58,7 +60,7 @@
     "@types/jasmine": "~4.3.0",
     "@types/node": "^18.15.3",
     "@types/uuid": "^10.0.0",
-    "cypress": "^13.15.0",
+    "cypress": "^12",
     "jasmine-core": "~4.5.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",

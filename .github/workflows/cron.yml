@@ -1,0 +1,36 @@
+name: Cron
+on:
+  schedule:
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+
+jobs:
+  cron:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        browser: [chrome, firefox, edge]
+        env:
+          - aceretro.frontend.staging.mmli1.ncsa.illinois.edu
+          - aceretro.platform.moleculemaker.org
+    name: E2E on ${{ matrix.browser }} (Cron)
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate with private NPM packages
+        run: |
+          echo "//hub.chemaxon.com/artifactory/api/npm/npm/:_auth=${{ secrets.NPM_TOKEN }}" > $HOME/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> $HOME/.npmrc
+          echo "npmrc_path=$HOME/.npmrc" >> "$GITHUB_ENV"
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          browser: ${{ matrix.browser }}
+        env:
+          CYPRESS_host: ${{ matrix.env }}
