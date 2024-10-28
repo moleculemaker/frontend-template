@@ -82,4 +82,4 @@ jobs:
           fi
           
           echo "✅ Application is ready!"
-          xvfb-run --auto-servernum npx nightwatch ./nightwatch --env ${{ matrix.browser }}
+          sudo xvfb-run --auto-servernum npx nightwatch ./nightwatch --env ${{ matrix.browser }}
