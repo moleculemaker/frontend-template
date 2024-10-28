@@ -115,7 +115,7 @@ module.exports = {
             '--no-sandbox',
             //'--ignore-certificate-errors',
             //'--allow-insecure-localhost',
-            //'--headless=new'
+            // '--headless=new'
           ]
         }
       },
@@ -136,7 +136,7 @@ module.exports = {
         'ms:edgeOptions': {
           // More info on EdgeDriver: https://docs.microsoft.com/en-us/microsoft-edge/webdriver-chromium/capabilities-edge-options
           args: [
-            //'--headless=new'
+            // '--headless=new'
           ]
         }
       },

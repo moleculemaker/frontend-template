@@ -39,18 +39,56 @@ jobs:
             sudo apt install -y xvfb
           fi
 
-      - name: Setup ChromeDriver and xvfb on if Local Environment
+      - name: Setup WebDriver for Local Environment
         run: |
-          if [ -z "$CHROMEWEBDRIVER" ]; then
-            LATEST_CHROME_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE")
-            wget "https://chromedriver.storage.googleapis.com/$LATEST_CHROME_VERSION/chromedriver_linux64.zip"
-            sudo unzip chromedriver_linux64.zip -d /usr/local/bin
-            sudo chmod a+x /usr/local/bin/chromedriver
-            sudo rm chromedriver_linux64.zip
-            echo "CHROMEWEBDRIVER=/usr/local/bin/chromedriver" >> "$GITHUB_ENV"
-          fi
+          case ${{ matrix.browser }} in
+            "chrome")
+              if [ -z "$CHROMEWEBDRIVER" ]; then
+                LATEST_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE")
+                wget "https://chromedriver.storage.googleapis.com/$LATEST_VERSION/chromedriver_linux64.zip"
+                sudo unzip chromedriver_linux64.zip -d /usr/local/bin
+                sudo chmod a+x /usr/local/bin/chromedriver
+                sudo rm chromedriver_linux64.zip
+                echo "CHROMEWEBDRIVER=/usr/local/bin/chromedriver" >> "$GITHUB_ENV"
+              fi
+              ;;
+            "firefox")
+              if [ -z "$GECKOWEBDRIVER" ]; then
+                LATEST_VERSION=$(curl -s "https://api.github.com/repos/mozilla/geckodriver/releases/latest" | jq -r '.tag_name')
+                wget "https://github.com/mozilla/geckodriver/releases/download/$LATEST_VERSION/geckodriver-$LATEST_VERSION-linux64.tar.gz"
+                sudo tar -xzf geckodriver-$LATEST_VERSION-linux64.tar.gz -C /usr/local/bin
+                sudo chmod a+x /usr/local/bin/geckodriver
+                sudo rm geckodriver-$LATEST_VERSION-linux64.tar.gz
+                echo "GECKOWEBDRIVER=/usr/local/bin/geckodriver" >> "$GITHUB_ENV"
+              fi
+              ;;
+            "edge")
+              if [ -z "$EDGEWEBDRIVER" ]; then
+                LATEST_VERSION=$(curl -s "https://msedgedriver.azureedge.net/LATEST_STABLE")
+                wget "https://msedgedriver.azureedge.net/$LATEST_VERSION/edgedriver_linux64.zip"
+                sudo unzip edgedriver_linux64.zip -d /usr/local/bin
+                sudo chmod a+x /usr/local/bin/msedgedriver
+                sudo rm edgedriver_linux64.zip
+                echo "EDGEWEBDRIVER=/usr/local/bin/msedgedriver" >> "$GITHUB_ENV"
+              fi
+              ;;
+          esac
 
       # ------------------------------------ END ----------------------------------- #
+
+      - name: Setup WebDriver
+        run: |
+          case ${{ matrix.browser }} in
+            "chrome")
+              echo "WEBDRIVER=$CHROMEWEBDRIVER" >> "$GITHUB_ENV"
+              ;;
+            "firefox")
+              echo "WEBDRIVER=$GECKOWEBDRIVER" >> "$GITHUB_ENV"
+              ;;
+            "edge")
+              echo "WEBDRIVER=$EDGEWEBDRIVER" >> "$GITHUB_ENV"
+              ;;
+          esac
       
 
       - name: Install dependencies
@@ -59,9 +97,9 @@ jobs:
 
       - name: Start application and run tests
         run: |
-          # check if CHROMEWEBDRIVER has right permission
-          ls -l $CHROMEWEBDRIVER
-          sudo chmod a+x $CHROMEWEBDRIVER
+          # check if WEBDRIVER has right permission
+          ls -l $WEBDRIVER
+          sudo chmod a+x $WEBDRIVER
           
           npm run start & # Runs in background
           APP_PID=$!
