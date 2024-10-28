@@ -59,6 +59,10 @@ jobs:
 
       - name: Start application and run tests
         run: |
+          # check if CHROMEWEBDRIVER has right permission
+          ls -l $CHROMEWEBDRIVER
+          sudo chmod a+x $CHROMEWEBDRIVER
+          
           npm run start & # Runs in background
           APP_PID=$!
           
