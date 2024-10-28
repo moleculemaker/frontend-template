@@ -1,0 +1,35 @@
+name: End-to-end Tests
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  release:
+    types: [published, edited, created]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        browser: [chrome, firefox, edge]
+
+    name: E2E on ${{ matrix.browser }}
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate with private NPM packages
+        run: |
+          echo "//hub.chemaxon.com/artifactory/api/npm/npm/:_auth=${{ secrets.NPM_TOKEN }}" > $HOME/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> $HOME/.npmrc
+          echo "npmrc_path=$HOME/.npmrc" >> "$GITHUB_ENV"
+
+      - name: Install xvfb
+        run: sudo apt-get install xvfb
+
+      - name: Nightwatch run
+        run: xvfb-run --auto-servernum npm test -- --env ${{ matrix.browser }}
