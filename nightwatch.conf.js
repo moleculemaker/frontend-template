@@ -108,7 +108,7 @@ module.exports = {
         'goog:chromeOptions': {
           // More info on Chromedriver: https://sites.google.com/a/chromium.org/chromedriver/
           args: [
-            //'--no-sandbox',
+            '--no-sandbox',
             //'--ignore-certificate-errors',
             //'--allow-insecure-localhost',
             //'--headless=new'
@@ -119,6 +119,7 @@ module.exports = {
       webdriver: {
         start_process: true,
         server_path: CHROMEWEBDRIVER,
+        port: 4200,
         cli_args: [
           // --verbose
         ]
