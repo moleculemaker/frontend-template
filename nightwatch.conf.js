@@ -11,6 +11,13 @@
 //             __/ |
 //            |___/
 
+// add environment variables
+require('dotenv').config();
+const CHROMEWEBDRIVER = process.env.CHROMEWEBDRIVER;
+const GECKOWEBDRIVER = process.env.GECKOWEBDRIVER;
+const EDGEWEBDRIVER = process.env.EDGEWEBDRIVER;
+
+
 module.exports = {
   // An array of folders (excluding subfolders) where your tests are located;
   // if this is not specified, the test source must be passed as the second argument to the test runner.
@@ -87,7 +94,7 @@ module.exports = {
       },
       webdriver: {
         start_process: true,
-        server_path: '',
+        server_path: GECKOWEBDRIVER,
         cli_args: [
           // very verbose geckodriver logs
           // '-vv'
@@ -111,7 +118,7 @@ module.exports = {
 
       webdriver: {
         start_process: true,
-        server_path: '',
+        server_path: CHROMEWEBDRIVER,
         cli_args: [
           // --verbose
         ]
@@ -131,7 +138,7 @@ module.exports = {
 
       webdriver: {
         start_process: true,
-        server_path: '',
+        server_path: EDGEWEBDRIVER,
         cli_args: [
           // --verbose
         ]

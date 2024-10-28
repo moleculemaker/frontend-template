@@ -32,4 +32,4 @@ jobs:
         run: sudo apt-get install xvfb
 
       - name: Nightwatch run
-        run: xvfb-run --auto-servernum npm test -- --env ${{ matrix.browser }}
+        run: xvfb-run --auto-servernum npx nightwatch ./nightwatch -- --env ${{ matrix.browser }}
