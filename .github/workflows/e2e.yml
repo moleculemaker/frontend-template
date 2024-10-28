@@ -37,7 +37,7 @@ jobs:
           npm ci
 
       - name: Set ChromeDriver permissions
-        run: sudo chmod +x /usr/local/share/chromedriver-linux64
+        run: sudo chmod +x {{ CHROMEWEBDRIVER }}
 
       - name: Nightwatch run
         run: xvfb-run --auto-servernum npx nightwatch ./nightwatch --env ${{ matrix.browser }}
