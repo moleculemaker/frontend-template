@@ -125,3 +125,21 @@ jobs:
           
           echo "✅ Application is ready!"
           sudo xvfb-run --auto-servernum npx nightwatch ./nightwatch --env ${{ matrix.browser }}
+        with:
+          post:
+            - name: upload logs if failed
+              run: |
+                if [ $? -eq 0 ]; then
+                  echo "✅ Nightwatch passed, skipping logs upload"
+                  echo tests_output/nightwatch-html-report/index.html >> $GITHUB_PATH
+                else
+                  echo "❌ Nightwatch failed, uploading logs"
+                  if [ "${{ matrix.browser }}" = "firefox" ]; then
+                    if [ -f "geckodriver.log" ]; then
+                      echo "📤 Uploading geckodriver.log..."
+                      echo geckodriver.log >> $GITHUB_PATH
+                    else
+                      echo "⚠️ geckodriver.log not found"
+                    fi
+                  fi
+                fi
