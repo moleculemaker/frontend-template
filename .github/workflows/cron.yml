@@ -15,6 +15,10 @@ jobs:
           - aceretro.platform.moleculemaker.org
     name: E2E on ${{ matrix.browser }} (Cron)
     steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Checkout
         uses: actions/checkout@v4
 
