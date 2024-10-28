@@ -24,12 +24,17 @@ jobs:
 
       - name: Authenticate with private NPM packages
         run: |
-          echo "//hub.chemaxon.com/artifactory/api/npm/npm/:_auth=${{ secrets.NPM_TOKEN }}" > $HOME/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> $HOME/.npmrc
+          echo "@chemaxon:registry=https://hub.chemaxon.com/artifactory/api/npm/npm/" > $HOME/.npmrc
+          echo "//hub.chemaxon.com/artifactory/api/npm/npm/:_auth=${{ secrets.NPM_TOKEN }}" >> $HOME/.npmrc
+          echo "@moleculemaker:registry=https://npm.pkg.github.com" >> $HOME/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}" >> $HOME/.npmrc
           echo "npmrc_path=$HOME/.npmrc" >> "$GITHUB_ENV"
 
-      - name: Install xvfb
-        run: sudo apt-get install xvfb
+      - name: Install dependencies
+        run: |
+          npm ci
 
       - name: Nightwatch run
-        run: xvfb-run --auto-servernum npx nightwatch ./nightwatch -- --env ${{ matrix.browser }}
+        run: |
+          export TESTING_URL=${{ matrix.env }}
+          xvfb-run --auto-servernum npx nightwatch ./nightwatch --env ${{ matrix.browser }}

@@ -13,9 +13,13 @@
 
 // add environment variables
 require('dotenv').config();
+
 const CHROMEWEBDRIVER = process.env.CHROMEWEBDRIVER + '/chromedriver';
 const GECKOWEBDRIVER = process.env.GECKOWEBDRIVER + '/geckodriver';
 const EDGEWEBDRIVER = process.env.EDGEWEBDRIVER + '/msedgedriver';
+const SAFARIWEBDRIVER = process.env.SAFARIWEBDRIVER + '/safaridriver';
+
+const TESTING_URL = process.env.TESTING_URL || 'http://localhost:4200';
 
 
 module.exports = {
@@ -47,7 +51,7 @@ module.exports = {
   test_settings: {
     default: {
       disable_error_log: false,
-      launch_url: 'http://localhost:4200',
+      launch_url: TESTING_URL,
 
       screenshots: {
         enabled: false,
@@ -75,7 +79,7 @@ module.exports = {
       },
       webdriver: {
         start_process: true,
-        server_path: ''
+        server_path: SAFARIWEBDRIVER,
       }
     },
     

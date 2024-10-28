@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        browser: [chrome]
+        browser: [chrome, firefox, edge]
 
     name: E2E on ${{ matrix.browser }}
     steps:
