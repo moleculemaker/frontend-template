@@ -31,10 +31,7 @@ jobs:
           echo "npmrc_path=$HOME/.npmrc" >> "$GITHUB_ENV"
 
       - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install xvfb -y
-          npm ci
+        run: npm ci
 
       - name: Set ChromeDriver permissions
         run: sudo chmod +x {{ CHROMEWEBDRIVER }}
