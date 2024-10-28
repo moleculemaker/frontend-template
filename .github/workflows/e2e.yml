@@ -36,5 +36,8 @@ jobs:
           sudo apt install xvfb -y
           npm ci
 
+      - name: Set ChromeDriver permissions
+        run: sudo chmod +x /usr/local/share/chromedriver-linux64
+
       - name: Nightwatch run
         run: xvfb-run --auto-servernum npx nightwatch ./nightwatch --env ${{ matrix.browser }}
