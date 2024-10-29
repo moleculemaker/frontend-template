@@ -76,21 +76,6 @@ jobs:
 
       # ------------------------------------ END ----------------------------------- #
 
-      - name: Setup WebDriver
-        run: |
-          case ${{ matrix.browser }} in
-            "chrome")
-              echo "WEBDRIVER=$CHROMEWEBDRIVER" >> "$GITHUB_ENV"
-              ;;
-            "firefox")
-              echo "WEBDRIVER=$GECKOWEBDRIVER" >> "$GITHUB_ENV"
-              ;;
-            "edge")
-              echo "WEBDRIVER=$EDGEWEBDRIVER" >> "$GITHUB_ENV"
-              ;;
-          esac
-      
-
       - name: Install dependencies
         run: |
           npm ci
@@ -99,7 +84,6 @@ jobs:
         run: |
           # check if WEBDRIVER has right permission
           ls -l $WEBDRIVER
-          sudo chmod a+x $WEBDRIVER
           
           npm run start & # Runs in background
           APP_PID=$!
@@ -124,7 +108,7 @@ jobs:
           fi
           
           echo "✅ Application is ready!"
-          sudo xvfb-run --auto-servernum npx nightwatch ./nightwatch --env ${{ matrix.browser }}
+          xvfb-run --auto-servernum npx nightwatch ./nightwatch --env ${{ matrix.browser }}
 
           if [ $? -eq 0 ]; then
             echo "✅ Nightwatch passed, skipping logs upload"
