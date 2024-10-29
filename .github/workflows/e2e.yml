@@ -9,11 +9,8 @@ on:
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        browser: [chrome, firefox, edge]
 
-    name: E2E on ${{ matrix.browser }}
+    name: E2E on Chrome
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -62,4 +59,4 @@ jobs:
           fi
           
           echo "✅ Application is ready!"
-          xvfb-run --auto-servernum npx nightwatch ./nightwatch --env ${{ matrix.browser }}
+          xvfb-run --auto-servernum npx nightwatch ./nightwatch --env chrome

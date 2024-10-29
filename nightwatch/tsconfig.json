@@ -1,19 +1,15 @@
 {
-  "extends": "../tsconfig",
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "target": "esnext",
+    "outDir": "../out-tsc/nightwatch",
     "module": "commonjs",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "allowJs": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true
+    "target": "es5",
+    "types": [
+      "node",
+      "nightwatch"
+    ]
   },
-  "ts-node": {
-    "transpileOnly": true
-  },
-  "include": ["."]
+  "include": [
+    "src/**/*"
+  ]
 }

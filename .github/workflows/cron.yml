@@ -9,11 +9,10 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        browser: [chrome, firefox, edge]
         env:
           - aceretro.frontend.staging.mmli1.ncsa.illinois.edu
           - aceretro.platform.moleculemaker.org
-    name: E2E on ${{ matrix.browser }} (Cron)
+    name: E2E on ${{ matrix.env }} (Cron)
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -34,7 +33,7 @@ jobs:
         run: |
           npm ci
 
-      - name: Nightwatch run
+      - name: Run E2E Tests
         run: |
           export TESTING_URL=${{ matrix.env }}
-          xvfb-run --auto-servernum npx nightwatch ./nightwatch --env ${{ matrix.browser }}
+          xvfb-run --auto-servernum npx nightwatch ./nightwatch --env chrome

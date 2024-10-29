@@ -7,7 +7,7 @@ ingress:
     traefik.ingress.kubernetes.io/router.tls: "true"
 
 controller:
-  image: moleculemaker/test-frontend:latest
+  image: moleculemaker/test-frontend:staging
 
 config:
   hostname: "https://mmli.fastapi.staging.mmli1.ncsa.illinois.edu"

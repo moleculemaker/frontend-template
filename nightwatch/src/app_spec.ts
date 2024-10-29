@@ -1,4 +1,4 @@
-import {NightwatchAPI, NightwatchTests} from 'nightwatch';
+import {NightwatchTests} from 'nightwatch';
 
 const TESTING_URL = process.env['TESTING_URL'] || 'http://localhost:4200';
 const home: NightwatchTests = {
