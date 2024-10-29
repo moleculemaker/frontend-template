@@ -30,20 +30,6 @@ jobs:
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}" >> $HOME/.npmrc
           echo "npmrc_path=$HOME/.npmrc" >> "$GITHUB_ENV"
 
-      - name: Setup WebDriver
-        run: |
-          case ${{ matrix.browser }} in
-            "chrome")
-              echo "WEBDRIVER=$CHROMEWEBDRIVER" >> "$GITHUB_ENV"
-              ;;
-            "firefox")
-              echo "WEBDRIVER=$GECKOWEBDRIVER" >> "$GITHUB_ENV"
-              ;;
-            "edge")
-              echo "WEBDRIVER=$EDGEWEBDRIVER" >> "$GITHUB_ENV"
-              ;;
-          esac
-
       - name: Install dependencies
         run: |
           npm ci
