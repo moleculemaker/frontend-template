@@ -2,7 +2,7 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 
 import { EnvironmentService } from '@services/environment.service';
-import { APP_INITIALIZER, importProvidersFrom } from '@angular/core';
+import { importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -55,12 +55,10 @@ bootstrapApplication(AppComponent, {
             trackerUrl: 'https://matomo.mmli1.ncsa.illinois.edu/'
         }), MatomoRouterModule, MenuModule, ApiModule.forRoot(() => new Configuration()), ReactiveFormsModule, DialogModule),
         EnvironmentService,
-        {
-            provide: APP_INITIALIZER,
-            useFactory: initAppFn,
-            multi: true,
-            deps: [EnvironmentService],
-        },
+        provideAppInitializer(() => {
+        const initializerFn = (initAppFn)(inject(EnvironmentService));
+        return initializerFn();
+      }),
         provideHttpClient(withInterceptorsFromDi()),
         provideAnimations(),
         provideAnimations()

@@ -8,18 +8,17 @@ import { PrimeTemplate } from "primeng/api";
 import { MarvinJsEditorComponent } from "../marvinjs/marvinjs-editor.component";
 
 @Component({
-  selector: "app-marvinjs-input",
-  templateUrl: "./marvinjs-input.component.html",
-  styleUrls: ["./marvinjs-input.component.scss"],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => MarvinjsInputComponent),
-      multi: true
-    }
-  ],
-  standalone: true,
-  imports: [FormsModule, InputTextModule, ButtonDirective, NgIf, DialogModule, MarvinJsEditorComponent, PrimeTemplate, Button]
+    selector: "app-marvinjs-input",
+    templateUrl: "./marvinjs-input.component.html",
+    styleUrls: ["./marvinjs-input.component.scss"],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => MarvinjsInputComponent),
+            multi: true
+        }
+    ],
+    imports: [FormsModule, InputTextModule, ButtonDirective, NgIf, DialogModule, MarvinJsEditorComponent, PrimeTemplate, Button]
 })
 export class MarvinjsInputComponent implements OnChanges, ControlValueAccessor {
   @Input() placeholder: string = "";

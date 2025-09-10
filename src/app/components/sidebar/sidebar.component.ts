@@ -19,7 +19,6 @@ export interface Tool {
     selector: "app-sidebar",
     templateUrl: "./sidebar.component.html",
     styleUrls: ["./sidebar.component.scss"],
-    standalone: true,
     imports: [
         NgIf,
         NgForOf,
@@ -29,7 +28,7 @@ export interface Tool {
         AsyncPipe,
         KeyValuePipe,
         SafePipe,
-    ],
+    ]
 })
 export class SidebarComponent implements OnInit {
   @Input() openInNewPage = true;

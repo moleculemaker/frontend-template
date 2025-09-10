@@ -10,7 +10,6 @@ import { ToolStatus } from '~/app/enums/tool-status';
     host: {
         class: 'grow flex w-full min-h-screen h-full'
     },
-    standalone: true,
     imports: [SidebarComponent, RouterOutlet]
 })
 export class MainLayoutComponent {

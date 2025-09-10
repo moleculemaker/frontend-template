@@ -6,7 +6,6 @@ import { SafePipe } from '../../pipes/safe.pipe';
     selector: 'app-molecule-image',
     templateUrl: './molecule-image.component.html',
     styleUrls: ['./molecule-image.component.scss'],
-    standalone: true,
     imports: [NgIf, SafePipe]
 })
 export class MoleculeImageComponent implements OnInit {
