@@ -40,6 +40,7 @@ import { MenuModule } from 'primeng/menu';
 import { ApiModule, Configuration } from '@api/mmli-backend/v1';
 import { DialogModule } from 'primeng/dialog';
 import { AppComponent } from './app/app.component';
+import { provideStore } from '@ngrx/store';
 
 const initAppFn = (envService: EnvironmentService) => {
   return () => envService.loadEnvConfig("/assets/config/envvars.json");
@@ -50,18 +51,19 @@ const initAppFn = (envService: EnvironmentService) => {
 
 bootstrapApplication(AppComponent, {
     providers: [
-        importProvidersFrom(BrowserModule, AppRoutingModule, CardModule, ChipModule, ChartModule, FormsModule, MessagesModule, ButtonModule, InputTextareaModule, InputNumberModule, PanelModule, MultiSelectModule, ProgressBarModule, SelectButtonModule, SkeletonModule, ProgressSpinnerModule, StepsModule, SliderModule, DropdownModule, TableModule, InputTextModule, ListboxModule, OverlayPanelModule, SidebarModule, TabViewModule, TabMenuModule, RadioButtonModule, CheckboxModule, FileUploadModule, SplitButtonModule, PanelModule, MatomoModule.forRoot({
-            siteId: 8, //TODO: update site id
-            trackerUrl: 'https://matomo.mmli1.ncsa.illinois.edu/'
-        }), MatomoRouterModule, MenuModule, ApiModule.forRoot(() => new Configuration()), ReactiveFormsModule, DialogModule),
-        EnvironmentService,
-        provideAppInitializer(() => {
+    importProvidersFrom(BrowserModule, AppRoutingModule, CardModule, ChipModule, ChartModule, FormsModule, MessagesModule, ButtonModule, InputTextareaModule, InputNumberModule, PanelModule, MultiSelectModule, ProgressBarModule, SelectButtonModule, SkeletonModule, ProgressSpinnerModule, StepsModule, SliderModule, DropdownModule, TableModule, InputTextModule, ListboxModule, OverlayPanelModule, SidebarModule, TabViewModule, TabMenuModule, RadioButtonModule, CheckboxModule, FileUploadModule, SplitButtonModule, PanelModule, MatomoModule.forRoot({
+        siteId: 8, //TODO: update site id
+        trackerUrl: 'https://matomo.mmli1.ncsa.illinois.edu/'
+    }), MatomoRouterModule, MenuModule, ApiModule.forRoot(() => new Configuration()), ReactiveFormsModule, DialogModule),
+    EnvironmentService,
+    provideAppInitializer(() => {
         const initializerFn = (initAppFn)(inject(EnvironmentService));
         return initializerFn();
-      }),
-        provideHttpClient(withInterceptorsFromDi()),
-        provideAnimations(),
-        provideAnimations()
-    ]
+    }),
+    provideHttpClient(withInterceptorsFromDi()),
+    provideAnimations(),
+    provideAnimations(),
+    provideStore()
+]
 })
   .catch(err => console.error(err));
