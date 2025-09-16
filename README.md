@@ -1,7 +1,7 @@
 # Frontend Template
 
 This Repo is intended to be used as a template frontend repo for all moleculemaker frontends.
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.7. 
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 20.3.0. 
 
 ## Bootstrap
 
