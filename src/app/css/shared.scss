@@ -1,15 +1,18 @@
 //**************** shared across the entire project and components ******************
+@use "core/const";
+@use "core/mixins";
+@use "custom";
 
 //**************** webfont and primary body tags ******************
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;700&display=swap");
 
 //use for base app and primeNG components
 body,
 body .p-component {
   font: {
-    family: $font_family;
-    size: $font_size_default;
+    family: const.$font_family;
+    size: const.$font_size_default;
   }
 }
 
@@ -25,104 +28,104 @@ h2,
 h3,
 h4,
 h5 {
-    margin: 0px;
-    margin: {
-        top: $padding;
-    }
+  margin: 0px;
+  margin: {
+    top: const.$padding;
+  }
 
-    font: {
-        family: $font_family_header;
-    }
+  font: {
+    family: const.$font_family_header;
+  }
 }
 
 h1 {
-    font: {
-        size: 1.75rem;
-    }
+  font: {
+    size: 1.75rem;
+  }
 
-    & + h3 {
-        margin: {
-            top: $padding * .2;
-        }
+  & + h3 {
+    margin: {
+      top: const.$padding * 0.2;
     }
+  }
 }
 
 h2 {
-    font: {
-        size: 1.4rem;
-        weight: bold;
-    }
+  font: {
+    size: 1.4rem;
+    weight: bold;
+  }
 
-    & + h4 {
-        margin: {
-            top: $padding * .2;
-        }
+  & + h4 {
+    margin: {
+      top: const.$padding * 0.2;
     }
+  }
 }
 
 h3 {
-    font: {
-        size: 1.1rem;
-        weight: 600;
-    }
+  font: {
+    size: 1.1rem;
+    weight: 600;
+  }
 
-    & + h5 {
-        margin: {
-            top: $padding * .2;
-        }
+  & + h5 {
+    margin: {
+      top: const.$padding * 0.2;
     }
+  }
 }
 
 h4 {
-    font: {
-        size: .85rem;
-        weight: normal;
-    }
-    text: {
-        transform: uppercase;
-    }
+  font: {
+    size: 0.85rem;
+    weight: normal;
+  }
+  text: {
+    transform: uppercase;
+  }
 }
 
 h5 {
-    font: {
-        size: .75rem;
-        weight: normal;
-    }
-    text: {
-        transform: uppercase;
-    }
+  font: {
+    size: 0.75rem;
+    weight: normal;
+  }
+  text: {
+    transform: uppercase;
+  }
 
-    @include opacity(60);
+  @include mixins.opacity(60);
 }
 
 .padded {
-    margin: {
-        top: $padding;
-    }
+  margin: {
+    top: const.$padding;
+  }
 }
 
 .p-button-xs {
-    @include p-button-xs();
+  @include custom.p-button-xs();
 }
 
 .page_container {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 
-    .container {
-        max: {
-            width: $page_width;
-        }
-        width: 100%;
-
-        padding: $padding;
+  .container {
+    max: {
+      width: const.$page_width;
     }
+    width: 100%;
+
+    padding: const.$padding;
+  }
 }
 
 .nowrap {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
-.p-overlaypanel-content{
+.p-overlaypanel-content {
   padding: 0 !important;
 }

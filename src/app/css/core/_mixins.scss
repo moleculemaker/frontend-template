@@ -1,3 +1,5 @@
+@use "functions";
+
 //**************** mixins ******************
 
 //collection of mixins, most are from bootstrap
@@ -311,7 +313,7 @@
 
 // Placeholder text
 // -------------------------
-@mixin placeholder($color:get_color(text)) {
+@mixin placeholder($color:functions.get_color(text)) {
 	&:-moz-placeholder {
 		color: $color;
 		text: {

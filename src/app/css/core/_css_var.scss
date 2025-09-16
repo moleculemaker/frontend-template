@@ -1,3 +1,8 @@
+@use "sass:meta";
+@use "functions";
+@use "inline-svg-function";
+@use "const";
+
 //**************** css_var ******************
 //create a variable for every color
 //color variables will be -dash based plus -color
@@ -8,22 +13,35 @@
 //default is to use the colors map, css_var('primary') would look in the $colors config
 //for key/value pairs, supply the value (non map) and it will use that  css_var('padding', $padding);
 
-@function css_var($name:'default', $map:$colors, $suffix:'-color') {
-	@if type-of($map) == 'map' {
-		//map data
-		@return var(#{'--' + str-replace($name, '_', '-') + $suffix}, #{get_map_value($name, $map)});
-	} @else {
-		//key value pair
-		@return var(#{'--' + str-replace($name, '_', '-') + $suffix}, #{$map});
-	}
+@function css_var($name: "default", $map: const.$colors, $suffix: "-color") {
+  @if meta.type-of($map) == "map" {
+    //map data
+    @return var(
+      #{"--" + inline-svg-function.str-replace($name, "_", "-") + $suffix},
+      #{functions.get_map_value($name, $map)}
+    );
+  } @else {
+    //key value pair
+    @return var(
+      #{"--" + inline-svg-function.str-replace($name, "_", "-") + $suffix},
+      #{$map}
+    );
+  }
 }
 
-@mixin define_css_var($name:'default', $map:$colors, $suffix:'-color') {
-	@if type-of($map) == 'map' {
-		//map data
-		--#{str-replace($name + $suffix, '_', '-')}: #{get_map_value($name, $map)};
-	} @else {
-		//key value pair
-		--#{str-replace($name, '_', '-')}: #{$map};
-	}
+@mixin define_css_var(
+  $name: "default",
+  $map: const.$colors,
+  $suffix: "-color"
+) {
+  @if meta.type-of($map) == "map" {
+    //map data
+    --#{inline-svg-function.str-replace($name + $suffix, '_', '-')}: #{functions.get_map_value(
+        $name,
+        $map
+      )};
+  } @else {
+    //key value pair
+    --#{inline-svg-function.str-replace($name, '_', '-')}: #{$map};
+  }
 }

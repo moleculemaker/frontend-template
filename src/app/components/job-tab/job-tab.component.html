@@ -1,0 +1,10 @@
+<p-tabs
+  value="{{ tab }}"
+  class="mb-4"
+  (valueChange)="onTabChange.emit($any($event))"
+>
+  <p-tablist>
+    <p-tab value="input">Request Configuration</p-tab>
+    <p-tab value="result">Recommendation Results</p-tab>
+  </p-tablist>
+</p-tabs>

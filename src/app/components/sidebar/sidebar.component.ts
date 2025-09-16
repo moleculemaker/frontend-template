@@ -16,19 +16,17 @@ export interface Tool {
 }
 
 @Component({
-    selector: "app-sidebar",
-    templateUrl: "./sidebar.component.html",
-    styleUrls: ["./sidebar.component.scss"],
-    imports: [
-        NgIf,
-        NgForOf,
-        NgSwitch,
-        NgSwitchCase,
-        TooltipModule,
-        AsyncPipe,
-        KeyValuePipe,
-        SafePipe,
-    ]
+  selector: "app-sidebar",
+  templateUrl: "./sidebar.component.html",
+  styleUrls: ["./sidebar.component.scss"],
+  imports: [
+    NgIf,
+    NgForOf,
+    TooltipModule,
+    AsyncPipe,
+    KeyValuePipe,
+    SafePipe,
+  ]
 })
 export class SidebarComponent implements OnInit {
   @Input() openInNewPage = true;
@@ -57,7 +55,7 @@ export class SidebarComponent implements OnInit {
     })
   );
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     const url = this.router.url;

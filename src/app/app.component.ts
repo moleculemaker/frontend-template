@@ -9,15 +9,16 @@ import { RouterOutlet } from "@angular/router";
     selector: "app-root",
     templateUrl: "./app.component.html",
     styleUrls: ["./app.component.scss"],
+    standalone: true,
     imports: [
         MenuModule,
         NgIf,
         RouterOutlet,
-    ]
+    ],
 })
 export class AppComponent {
   emailstring: string =
-    "mailto:test-feedback@moleculemaker.org?Subject=User feedback for Test";
+    "mailto:test-feedback@moleculemaker.org?Subject=User feedback for test";
   showCite: boolean = false;
 
   showComingSoonPopup: boolean = false;

@@ -41,7 +41,6 @@
             ],
             "styles": [
               "src/app/css/primeng_theme.scss",
-              "node_modules/primeng/resources/primeng.min.css",
               "node_modules/primeicons/primeicons.css",
               "src/styles.scss",
               "src/app/css/styles.scss",
@@ -162,95 +161,11 @@
               "node_modules/@chemaxon/marvinjs/js/webservices.js"
             ]
           }
-        },
-        "storybook": {
-          "builder": "@storybook/angular:start-storybook",
-          "options": {
-            "configDir": ".storybook",
-            "browserTarget": "test:build",
-            "compodoc": true,
-            "compodocArgs": [
-              "-e",
-              "json",
-              "-d",
-              "."
-            ],
-            "port": 6006
-          }
-        },
-        "build-storybook": {
-          "builder": "@storybook/angular:build-storybook",
-          "options": {
-            "configDir": ".storybook",
-            "browserTarget": "test:build",
-            "compodoc": true,
-            "compodocArgs": [
-              "-e",
-              "json",
-              "-d",
-              "."
-            ],
-            "outputDir": "storybook-static"
-          }
-        },
-        "nightwatch-run": {
-          "builder": "@nightwatch/schematics:nightwatch",
-          "options": {
-            "devServerTarget": "test:serve",
-            "tsConfig": "../nightwatch/tsconfig.e2e.json",
-            "config": "./nightwatch.conf.js",
-            "env": "chrome"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "test:serve:production"
-            }
-          }
-        },
-        "e2e": {
-          "builder": "@nightwatch/schematics:nightwatch",
-          "options": {
-            "devServerTarget": "test:serve",
-            "tsConfig": "../nightwatch/tsconfig.e2e.json",
-            "config": "./nightwatch.conf.js",
-            "env": "chrome"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "test:serve:production"
-            }
-          }
         }
       }
     }
   },
   "cli": {
     "analytics": false
-  },
-  "schematics": {
-    "@schematics/angular:component": {
-      "type": "component"
-    },
-    "@schematics/angular:directive": {
-      "type": "directive"
-    },
-    "@schematics/angular:service": {
-      "type": "service"
-    },
-    "@schematics/angular:guard": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:interceptor": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:module": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:pipe": {
-      "typeSeparator": "."
-    },
-    "@schematics/angular:resolver": {
-      "typeSeparator": "."
-    }
   }
 }
