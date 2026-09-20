@@ -1,10 +1,14 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { provideEnvironmentServiceStub } from '~/app/testing/environment-service.stub';
 
 import { JobTabComponent } from './job-tab.component';
+
+@Component({ standalone: true, template: '' })
+class ResultStubComponent {}
 
 describe('JobTabComponent', () => {
   let component: JobTabComponent;
@@ -13,7 +17,9 @@ describe('JobTabComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [JobTabComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideEnvironmentServiceStub()],
+      providers: [provideHttpClient(), provideHttpClientTesting(),
+                  provideRouter([{ path: 'x/result/:id', component: ResultStubComponent }]),
+                  provideEnvironmentServiceStub()],
     })
     .compileComponents();
 
@@ -24,5 +30,25 @@ describe('JobTabComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('follows navigation onto a result URL while alive', async () => {
+    expect(component.tabs[1].disabled).toBeTrue();
+
+    await TestBed.inject(Router).navigateByUrl('/x/result/abc');
+
+    expect(component.tabs[1].disabled).toBeFalse();
+    expect(component.activeTab).toBe(component.tabs[1]);
+  });
+
+  // The result page is destroyed and rebuilt on every resubmit, so a tab that kept
+  // listening after destroy would pile up one dead handler per submission.
+  it('stops listening to router events once destroyed', async () => {
+    fixture.destroy();
+
+    await TestBed.inject(Router).navigateByUrl('/x/result/abc');
+
+    expect(component.tabs[1].disabled).toBeTrue();
+    expect(component.activeTab).toBe(component.tabs[0]);
   });
 });
