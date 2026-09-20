@@ -55,6 +55,8 @@ export class TestComponent implements OnChanges {
     }
   }
 
+  get requestUnchanged(): boolean { return false; }
+
   onSubmit() {
     if (!this.form.valid) {
       return;

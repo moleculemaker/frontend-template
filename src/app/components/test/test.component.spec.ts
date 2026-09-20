@@ -1,3 +1,4 @@
+import { SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
@@ -44,5 +45,38 @@ describe('TestComponent', () => {
     expect(createAndRunJob).toHaveBeenCalled();
     expect(emitted).toEqual(['job-b']);
     expect(navigate).toHaveBeenCalledWith(['test', 'result', 'job-b']);
+  });
+  describe('resubmitting a loaded job', () => {
+    // The template's request payload is empty, so any loaded job reads as unchanged
+    // until an app fills in buildJobInfo(); the compare itself is what is under test.
+    const loadedJob = { job_id: 'job-a', email: 'a@b.c' };
+
+    beforeEach(() => {
+      component.formValue = loadedJob;
+      component.ngOnChanges({ formValue: new SimpleChange(null, loadedJob, true) });
+    });
+
+    it('returns to the loaded job instead of creating a duplicate when the request is unchanged', () => {
+      expect(component.requestUnchanged).toBeTrue();
+
+      component.onSubmit();
+
+      expect(createAndRunJob).not.toHaveBeenCalled();
+      expect(emitted).toEqual(['job-a']);
+      expect(navigate).toHaveBeenCalledWith(['test', 'result', 'job-a']);
+    });
+
+    // Email is a notification setting, not part of the request.
+    it('treats an email-only change as the same request', () => {
+      component.form.patchValue({ email: 'other@b.c' });
+
+      expect(component.requestUnchanged).toBeTrue();
+    });
+
+    it('is never unchanged on the standalone page, which has no loaded job', () => {
+      component.formValue = null;
+
+      expect(component.requestUnchanged).toBeFalse();
+    });
   });
 });
