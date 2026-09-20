@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import { CheckboxModule } from "primeng/checkbox";
@@ -29,6 +29,7 @@ import { TestService } from '~/app/services/test.service';
 export class TestComponent implements OnChanges {
   @Input() formValue!: any; // TODO: update type
   @Input() showJobTab = true;
+  @Output() submitted = new EventEmitter<string>();
 
   form = new FormGroup({
     email: new FormControl("", [Validators.email]),

@@ -1,10 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
-import { provideEnvironmentServiceStub } from '~/app/testing/environment-service.stub';
 
 import { TestResultComponent } from './test-result.component';
+import { TestComponent } from '~/app/components/test/test.component';
+import { provideEnvironmentServiceStub } from '~/app/testing/environment-service.stub';
 
 describe('TestResultComponent', () => {
   let component: TestResultComponent;
@@ -13,7 +16,7 @@ describe('TestResultComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TestResultComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), provideEnvironmentServiceStub()],
+      providers: [provideNoopAnimations(), provideEnvironmentServiceStub(), provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     })
     .compileComponents();
 
@@ -24,5 +27,28 @@ describe('TestResultComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('resubmitting from the embedded form', () => {
+    // No route param in this fixture, so jobId falls back to the example id.
+    const embeddedForm = (): TestComponent =>
+      fixture.debugElement.query(By.directive(TestComponent)).componentInstance;
+
+    beforeEach(() => {
+      component.currentPage = 'input';
+      fixture.detectChanges();
+    });
+
+    it('returns to the results tab when the submission resolves to the job already shown', () => {
+      embeddedForm().submitted.emit(component.jobId);
+
+      expect(component.currentPage).toBe('result');
+    });
+
+    it('leaves the tab alone for another job, which navigation handles', () => {
+      embeddedForm().submitted.emit('some-other-job');
+
+      expect(component.currentPage).toBe('input');
+    });
   });
 });

@@ -43,6 +43,8 @@ export class TestResultComponent extends JobResult {
     super(service);
   }
 
+  onResubmitted(jobId: string): void {}
+
   copyAndPasteURL(): void {
     const selBox = document.createElement('textarea');
     selBox.style.position = 'fixed';
