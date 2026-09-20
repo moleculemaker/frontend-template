@@ -29,6 +29,12 @@ import { TestService } from '~/app/services/test.service';
 export class TestComponent implements OnChanges {
   @Input() formValue!: any; // TODO: update type
   @Input() showJobTab = true;
+  /**
+   * The job id a submission resolved to, emitted just before navigating to it. The
+   * result page that embeds this form needs it for the one case navigation cannot
+   * cover: a resubmit that resolves to the job already on screen is a same-URL
+   * navigation the router ignores.
+   */
   @Output() submitted = new EventEmitter<string>();
 
   form = new FormGroup({
@@ -65,6 +71,7 @@ export class TestComponent implements OnChanges {
         email: this.form.controls["email"].value || '',
       }
     ).subscribe((response) => {
+      this.submitted.emit(response.job_id);
       this.router.navigate(['test', 'result', response.job_id]);
     })
   }

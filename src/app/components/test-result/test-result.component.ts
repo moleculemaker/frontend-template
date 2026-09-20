@@ -43,7 +43,17 @@ export class TestResultComponent extends JobResult {
     super(service);
   }
 
-  onResubmitted(jobId: string): void {}
+  /**
+   * A resubmit that resolves to another job navigates there, and the route reuse
+   * strategy rebuilds this page for it. One that resolves to this same job is a
+   * same-URL navigation the router ignores, so nothing else would bring the
+   * results tab back.
+   */
+  onResubmitted(jobId: string): void {
+    if (jobId === this.jobId) {
+      this.currentPage = 'result';
+    }
+  }
 
   copyAndPasteURL(): void {
     const selBox = document.createElement('textarea');
