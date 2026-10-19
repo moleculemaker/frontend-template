@@ -9,27 +9,12 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 2. If you do not have nvm installed, install it from https://github.com/nvm-sh/nvm
 3. Run `nvm use` to set the correct node version for this project
 4. Run `npm install` to install the dependencies
-5. Run `npm run init` to generate deployment configuration for the app. You will be prompted to enter the app name.
 
-## Utilities
+## Components
 
-This repo includes a library that helps build frontend application quickly.
+All builtin components are inside the `src/app/components` folder.
 
-- Code Generator:
-
-  - Command: `ng g @moleculemaker/dev-tool:mmli-job`
-
-    Effect: Generate a template job input page, loading page, and result page
-
-  - Command: `ng g @moleculemaker/dev-tool:deployment`
- 
-    Effect: Generate an application with ArgoCD deployment configuation.
-
-- UI Library
-
-  All builtin components are inside `src/app/components` folder.
-
-  Component Preview (WIP): use storybook
+Component Preview (WIP): use storybook
 
 ## Development server
 
