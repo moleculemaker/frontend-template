@@ -38,8 +38,8 @@ bootstrapApplication(AppComponent, {
   providers: [
     importProvidersFrom(
       MatomoModule.forRoot({
-        siteId: 8, //TODO: update site id
-        trackerUrl: 'https://matomo.mmli1.ncsa.illinois.edu/'
+        siteId: -1,   //TODO: update site id after creating in Matomo
+        trackerUrl: 'https://matomo.mmli2.ncsa.illinois.edu/'
       }),
       MatomoRouterModule,
       MenuModule,
