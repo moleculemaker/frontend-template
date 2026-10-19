@@ -23,6 +23,12 @@ jobs:
         run: |
           npm ci
 
+      - name: Files derived from app.yaml are up to date
+        run: npm run app:sync -- --check
+
+      - name: app:sync tests
+        run: npm run test:scripts
+
       - name: Unit tests
         run: npx ng test --watch=false --browsers=ChromeHeadless
 

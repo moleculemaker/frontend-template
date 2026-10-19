@@ -6,9 +6,9 @@ networks:
 
 
 services:
-  test:
-    image: moleculemaker/test-frontend:localdev
-    container_name: test-frontend
+  frontend:
+    image: frontend:localdev
+    container_name: frontend
     build:
       context: .
     env_file:

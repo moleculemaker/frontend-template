@@ -1,0 +1,25 @@
+ingress:
+  hostname: mutagenesis.frontend.staging.mmli2.ncsa.illinois.edu
+  tls: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    kubernetes.io/tls-acme: "true"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+
+controller:
+  image: ghcr.io/ibiofoundry/mutagenesis-frontend:latest
+
+imagePullSecrets:
+  - name: ibiofoundry-regcred
+
+imagePullSecret:
+  name: ibiofoundry-regcred
+  encryptedDockerConfigJson: ""
+
+config:
+  hostname: "https://mmli.fastapi.staging.mmli2.ncsa.illinois.edu"
+  basePath: ""
+  signInUrl: "https://mmli2.ncsa.illinois.edu/oauth2/start?rd=https%3A%2F%2Fmutagenesis.frontend.staging.mmli2.ncsa.illinois.edu%2Fconfiguration"
+  signOutUrl: "https://mmli2.ncsa.illinois.edu/oauth2/sign_out?rd=https%3A%2F%2Fmutagenesis.frontend.staging.mmli2.ncsa.illinois.edu%2Fconfiguration"
+  userInfoUrl: "https://mmli2.ncsa.illinois.edu/oauth2/userinfo"
+  frontendOnly: "false"
