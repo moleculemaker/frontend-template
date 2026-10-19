@@ -70,3 +70,18 @@ test('the page title is the app name, escaped', () => {
   assert.equal(updateTitle('<head><title>test</title></head>', 'A & <B>'), '<head><title>A &amp; &lt;B></title></head>');
   assert.throws(() => updateTitle('<head></head>', 'x'), /no <title>/);
 });
+
+test('a tagged line the rewriter cannot parse is an error, not a silent skip', () => {
+  const d = derive(EZSPEC);
+  // value inside a block scalar: the tag would be part of the value
+  assert.throws(() => updateManagedLines('images: |\n  moleculemaker/old # app:sync image', d, 'x.yml'), /cannot rewrite/);
+  // hyphenated tag key
+  assert.throws(() => updateManagedLines('  X: y # app:sync staging-host', d, 'x.yml'), /cannot rewrite/);
+  // CRLF line ending
+  assert.throws(() => updateManagedLines('  X: y # app:sync image\r', d, 'x.yml'), /cannot rewrite/);
+});
+
+test('a "- key: value" list item keeps its key', () => {
+  const out = updateManagedLines('  - image: moleculemaker/old # app:sync image', derive(EZSPEC), 'x.yml');
+  assert.equal(out, '  - image: moleculemaker/ezspecificity-frontend # app:sync image');
+});

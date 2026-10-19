@@ -160,12 +160,16 @@ export function render(app) {
   };
 }
 
-const MANAGED_LINE = /^(\s*(?:- |[\w-]+: ))(\S.*?)(\s+# app:sync ([\w]+))$/;
+// `key: value # app:sync k`, `- value # app:sync k` or `- key: value # app:sync k`
+const MANAGED_LINE = /^(\s*(?:- (?:[\w-]+: )?|[\w-]+: ))(\S.*?)(\s+# app:sync ([\w]+))$/;
 
 export function updateManagedLines(text, derived, file) {
-  return text.split('\n').map((line) => {
+  return text.split('\n').map((line, i) => {
+    if (!line.includes('# app:sync')) return line;
     const m = line.match(MANAGED_LINE);
-    if (!m) return line;
+    // A tagged line that can't be rewritten would otherwise keep a stale value
+    // while --check passes
+    if (!m) throw new Error(`${file}:${i + 1}: cannot rewrite this app:sync line; use "key: value # app:sync <key>" or "- value # app:sync <key>" on one line`);
     const key = m[4];
     if (!(key in derived)) throw new Error(`${file}: unknown app:sync key "${key}"`);
     return `${m[1]}${derived[key]}${m[3]}`;
@@ -197,7 +201,13 @@ function main(argv) {
     return 1;
   }
 
-  const files = outputs(app, read);
+  let files;
+  try {
+    files = outputs(app, read);
+  } catch (err) {
+    console.error(err.message);
+    return 1;
+  }
 
   if (argv.includes('--list')) {
     console.log('Derived from app.yaml:');
