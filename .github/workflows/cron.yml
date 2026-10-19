@@ -1,7 +1,8 @@
 name: Cron
+# The schedule is off until the template itself is deployed to staging (#15): no
+# host serves it yet, so a nightly run could only fail. Apps created from the
+# template should restore it with their own staging and prod hosts.
 on:
-  schedule:
-    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -10,8 +11,7 @@ jobs:
     strategy:
       matrix:
         env:
-          - test.frontend.staging.mmli1.ncsa.illinois.edu
-          - test.platform.moleculemaker.org
+          - test.frontend.staging.mmli2.ncsa.illinois.edu
     name: E2E on ${{ matrix.env }} (Cron)
     steps:
       - uses: actions/setup-node@v4
@@ -20,14 +20,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Authenticate with private NPM packages
-        run: |
-          echo "@chemaxon:registry=https://hub.chemaxon.com/artifactory/api/npm/npm/" > $HOME/.npmrc
-          echo "//hub.chemaxon.com/artifactory/api/npm/npm/:_auth=${{ secrets.NPM_TOKEN }}" >> $HOME/.npmrc
-          echo "@moleculemaker:registry=https://npm.pkg.github.com" >> $HOME/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}" >> $HOME/.npmrc
-          echo "npmrc_path=$HOME/.npmrc" >> "$GITHUB_ENV"
 
       - name: Install dependencies
         run: |

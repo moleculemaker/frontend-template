@@ -9,41 +9,14 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 2. If you do not have nvm installed, install it from https://github.com/nvm-sh/nvm
 3. Run `nvm use` to set the correct node version for this project
 4. Run `npm install` to install the dependencies
-5. Run `npm run init` to generate deployment configuration for the app. You will be prompted to enter the app name.
 
-## Utilities
+## Components
 
-This repo includes a library that helps build frontend application quickly.
+All builtin components are inside the `src/app/components` folder.
 
-- Code Generator:
-
-  - Command: `ng g @moleculemaker/dev-tool:mmli-job`
-
-    Effect: Generate a template job input page, loading page, and result page
-
-  - Command: `ng g @moleculemaker/dev-tool:deployment`
- 
-    Effect: Generate an application with ArgoCD deployment configuation.
-
-- UI Library
-
-  All builtin components are inside `src/app/components` folder.
-
-  Component Preview (WIP): use storybook
+Component Preview (WIP): use storybook
 
 ## Development server
-
-For marvin.js license add the following lines to the ~/.npmrc file:
-```
-@chemaxon:registry=https://hub.chemaxon.com/artifactory/api/npm/npm/
-hub.chemaxon.com/artifactory/api/npm/npm/:_auth="<auth>"
-hub.chemaxon.com/artifactory/api/npm/npm/:_password="<password>"
-hub.chemaxon.com/artifactory/api/npm/npm/:username=<user>
-hub.chemaxon.com/artifactory/api/npm/npm/:email=<email>
-hub.chemaxon.com/artifactory/api/npm/npm/:always-auth=true
-```
-
-MMLI members can reach out to developers for the secrets. Non-MMLI members will need to make their own arrangements for a MarvinJS license.
 
 Run `npm start` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 

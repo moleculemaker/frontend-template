@@ -30,7 +30,7 @@
   </div>
 
   @if (isLoading$ | async) {
-    <app-loading [jobType]="jobType"></app-loading>
+    <app-loading [status$]="statusResponse$"></app-loading>
   }
 
   <div class="flex flex-col gap-8" [class.hidden]="isLoading$ | async">

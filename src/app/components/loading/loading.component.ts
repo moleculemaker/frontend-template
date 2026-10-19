@@ -1,13 +1,10 @@
 import { Component, Input, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
-import { ActivatedRoute } from "@angular/router";
-import { BehaviorSubject, combineLatest, interval, map } from "rxjs";
+import { BehaviorSubject, combineLatest, interval, map, Observable } from "rxjs";
 import { NgIf, AsyncPipe } from "@angular/common";
 import { ProgressBarModule } from "primeng/progressbar";
 
-import { JobStatus, JobType } from "~/app/api/mmli-backend/v1";
-import { JobResult } from "~/app/models/job-result";
-import { TestService } from '~/app/services/test.service';
+import { Job, JobStatus } from "~/app/api/mmli-backend/v1";
 
 @Component({
     selector: "app-loading",
@@ -23,9 +20,9 @@ import { TestService } from '~/app/services/test.service';
         AsyncPipe,
     ],
 })
-export class LoadingComponent extends JobResult implements OnInit {
-  @Input() override jobType: JobType;
-  override jobId: string = this.route.snapshot.paramMap.get("id") || "";
+export class LoadingComponent implements OnInit {
+  // The page's own status poll (JobResult.statusResponse$), so the page polls once
+  @Input({ required: true }) status$: Observable<Job>;
 
   estimatedTime: number;
   estimatedTimeString: string;
@@ -36,8 +33,11 @@ export class LoadingComponent extends JobResult implements OnInit {
     subscriberEmail: new FormControl("", [Validators.required, Validators.email]),
   });
 
-  value$ = combineLatest([
-    this.statusResponse$,
+  value$: Observable<number>;
+
+  private progress$() {
+    return combineLatest([
+    this.status$,
     interval(1000),
   ]).pipe(
     map(([status, _]) => {
@@ -71,16 +71,11 @@ export class LoadingComponent extends JobResult implements OnInit {
       }
       return 0;
     }
-  ))
-
-  constructor(
-    private route: ActivatedRoute,
-    service: TestService,
-  ) {
-    super(service);
+  ));
   }
 
   ngOnInit(): void {
+    this.value$ = this.progress$();
     this.estimatedTime = 10 * 60;
 
     const hours = Math.floor(this.estimatedTime / 3600);

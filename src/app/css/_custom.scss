@@ -19,7 +19,7 @@ $colors: map.merge(
   )
 );
 
-//these can override primeNG theme (but will need to update the primeng_theme.css file to use var() instead of hard coding)
+//these can override primeNG styles
 $colors: map.merge(
   $colors,
   (

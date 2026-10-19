@@ -32,6 +32,13 @@ example: document.documentElement.style.setProperty('--text-color', '#ff0000');
   //misc
   //	@include define_css_var('padding', $padding);
   //	@include define_css_var('border-radius', $border_radius);
+
+  // Formerly defined by the compiled PrimeNG 17 theme (primeng_theme.scss, removed),
+  // still used by the sidebar and loading screen. Values unchanged; to be replaced
+  // by the design-system token table (frontend-template#16).
+  --surface-b: #f8f9fa;
+  --surface-d: #dee2e6;
+  --text-color-secondary: #6c757d;
 }
 
 //****************
