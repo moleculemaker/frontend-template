@@ -29,6 +29,9 @@ jobs:
         run: |
           npm ci
 
+      - name: Unit tests
+        run: npx ng test --watch=false --browsers=ChromeHeadless
+
       - name: Start application and run tests
         run: |
           # check if WEBDRIVER has right permission
