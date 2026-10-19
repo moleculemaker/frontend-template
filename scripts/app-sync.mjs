@@ -165,7 +165,7 @@ const MANAGED_LINE = /^(\s*(?:- (?:[\w-]+: )?|[\w-]+: ))(\S.*?)(\s+# app:sync ([
 
 export function updateManagedLines(text, derived, file) {
   return text.split('\n').map((line, i) => {
-    if (!line.includes('# app:sync')) return line;
+    if (!/#\s*app:sync\b/.test(line)) return line;
     const m = line.match(MANAGED_LINE);
     // A tagged line that can't be rewritten would otherwise keep a stale value
     // while --check passes

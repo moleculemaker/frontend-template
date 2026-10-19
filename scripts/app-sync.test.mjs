@@ -79,6 +79,9 @@ test('a tagged line the rewriter cannot parse is an error, not a silent skip', (
   assert.throws(() => updateManagedLines('  X: y # app:sync staging-host', d, 'x.yml'), /cannot rewrite/);
   // CRLF line ending
   assert.throws(() => updateManagedLines('  X: y # app:sync image\r', d, 'x.yml'), /cannot rewrite/);
+  // tag spacing the strict pattern does not accept
+  assert.throws(() => updateManagedLines('  X: y #app:sync image', d, 'x.yml'), /cannot rewrite/);
+  assert.throws(() => updateManagedLines('  X: y #  app:sync image', d, 'x.yml'), /cannot rewrite/);
 });
 
 test('a "- key: value" list item keeps its key', () => {
