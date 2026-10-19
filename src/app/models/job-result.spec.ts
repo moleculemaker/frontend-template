@@ -67,8 +67,8 @@ describe('JobResult polling lifecycle', () => {
   }));
 
   it('runs one poll no matter how many consumers subscribe', fakeAsync(() => {
-    // Every consumer of one instance reads the same status. (<app-loading> is a
-    // separate JobResult instance with its own poll, which this spec cannot see.)
+    // The header, the loading screen (via its status$ input) and the result
+    // pipeline all read the status.
     // Before the stream was shared, each started its own timer and its own
     // requests, and the result gate could miss the terminal status.
     const { jr, service } = makeJobResult([{ phase: JobStatus.Completed }]);

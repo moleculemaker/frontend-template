@@ -4,6 +4,9 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { provideEnvironmentServiceStub } from '~/app/testing/environment-service.stub';
 
+import { of } from 'rxjs';
+
+import { Job, JobStatus } from '~/app/api/mmli-backend/v1';
 import { LoadingComponent } from './loading.component';
 
 describe('LoadingComponent', () => {
@@ -19,6 +22,7 @@ describe('LoadingComponent', () => {
 
     fixture = TestBed.createComponent(LoadingComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('status$', of({ phase: JobStatus.Processing } as Job));
     fixture.detectChanges();
   });
 

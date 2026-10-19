@@ -10,10 +10,9 @@ export class JobResult {
     resultLoaded$ = new BehaviorSubject(false);
 
     /**
-     * One shared poll per JobResult instance: every consumer of this instance
-     * (template `| async`, jobResultResponse$) rides this one subscription.
-     * <app-loading> is a separate instance (LoadingComponent extends JobResult) and
-     * still runs its own poll while it is shown. Before, the stream was cold
+     * One shared poll: every consumer (template `| async`, jobResultResponse$, and
+     * <app-loading>, which receives this stream as its status$ input) rides this
+     * one subscription. Before, the stream was cold
      * and jobResultResponse$ gated on a second copy of it through skipUntil, so
      * two independent polls raced for the terminal status. skipUntil subscribes
      * the gate first, then the source; if the source's request came back
