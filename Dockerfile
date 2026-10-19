@@ -1,7 +1,7 @@
 # Builds a Docker image for the test Frontend
 #
 # Usage:
-#     docker build --secret id=NPMRC,src=$HOME/.npmrc -t moleculemaker/test-frontend .
+#     docker build -t moleculemaker/test-frontend .
 #
 
 # Use official node image as the base image
@@ -10,15 +10,13 @@ FROM --platform=$BUILDPLATFORM node:22 as build
 # Set the working directory
 WORKDIR /usr/local/app
 
-# Pass in NPM credentials as a Docker build secret
-ENV NPM_CONFIG_USERCONFIG="/run/secrets/NPMRC"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Add dependencies manifest to app
 COPY package.json package-lock.json ./
 
 # Install all the dependencies
-RUN --mount=type=secret,id=NPMRC npm install
+RUN npm install
 
 # Add the source code to app
 COPY angular.json entrypoint.sh tsconfig*.json package*.json proxy.conf.json tailwind.config.js .

@@ -32,24 +32,14 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              {
-                "glob": "**/*",
-                "input": "node_modules/@chemaxon/marvinjs",
-                "output": "./assets/marvin-js"
-              }
+              "src/assets"
             ],
             "styles": [
               "node_modules/primeicons/primeicons.css",
               "src/styles.scss",
-              "src/app/css/styles.scss",
-              "node_modules/@chemaxon/marvinjs/gui/css/editor.css"
+              "src/app/css/styles.scss"
             ],
             "scripts": [
-              "node_modules/@chemaxon/marvinjs/gui/lib/promise-1.0.0.min.js",
-              "node_modules/@chemaxon/marvinjs/js/marvinjslauncher.js",
-              "node_modules/@chemaxon/marvinjs/js/util.js",
-              "node_modules/@chemaxon/marvinjs/js/webservices.js",
               "node_modules/chart.js/dist/chart.js"
             ],
             "browser": "src/main.ts"
@@ -138,25 +128,14 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              {
-                "glob": "**/*",
-                "input": "node_modules/@chemaxon/marvinjs",
-                "output": "./assets/marvin-js"
-              }
+              "src/assets"
             ],
             "styles": [
               "node_modules/primeicons/primeicons.css",
               "src/styles.scss",
-              "src/app/css/styles.scss",
-              "node_modules/@chemaxon/marvinjs/gui/css/editor.css"
+              "src/app/css/styles.scss"
             ],
-            "scripts": [
-              "node_modules/@chemaxon/marvinjs/gui/lib/promise-1.0.0.min.js",
-              "node_modules/@chemaxon/marvinjs/js/marvinjslauncher.js",
-              "node_modules/@chemaxon/marvinjs/js/util.js",
-              "node_modules/@chemaxon/marvinjs/js/webservices.js"
-            ]
+            "scripts": []
           }
         }
       }
