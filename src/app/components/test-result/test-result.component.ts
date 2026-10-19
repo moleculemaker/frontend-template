@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { tap } from 'rxjs';
 
 import { JobType } from '~/app/api/mmli-backend/v1';
 import { JobResult } from '~/app/models/job-result';
@@ -32,7 +33,7 @@ export class TestResultComponent extends JobResult {
   
   response$ = this.jobResultResponse$;
 
-  currentPage = 'input';
+  currentPage = 'result';
 
   jobInfo: any = {};
 
@@ -41,6 +42,24 @@ export class TestResultComponent extends JobResult {
     private route: ActivatedRoute,
   ) {
     super(service);
+    // The embedded form recognises a resubmit of this very job by the job_id.
+    this.statusResponse$ = this.statusResponse$.pipe(
+      tap((job) => {
+        this.jobInfo = { ...JSON.parse(job.job_info || '{}'), email: job.email || '', job_id: this.jobId };
+      }),
+    );
+  }
+
+  /**
+   * A resubmit that resolves to another job navigates there, and the route reuse
+   * strategy rebuilds this page for it. One that resolves to this same job is a
+   * same-URL navigation the router ignores, so nothing else would bring the
+   * results tab back.
+   */
+  onResubmitted(jobId: string): void {
+    if (jobId === this.jobId) {
+      this.currentPage = 'result';
+    }
   }
 
   copyAndPasteURL(): void {
