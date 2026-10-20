@@ -129,3 +129,7 @@ test('no tagged files is an empty list, not an error; other git failures still t
   const notARepo = () => { throw Object.assign(new Error('not a git repository'), { status: 128 }); };
   assert.throws(() => managedFiles(notARepo), /not a git repository/);
 });
+
+test('local chart values pin a tag that is actually pushed', () => {
+  assert.equal(generated(EZSPEC, 'chart/values.yaml').controller.image, 'ghcr.io/moleculemaker/ezspecificity-frontend:main');
+});

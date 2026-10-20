@@ -11,7 +11,7 @@ name: Docker
 # The first push creates the package with the repo's visibility: public for a public
 # repo (as new apps are, so the cluster needs no pull secret), private for an internal
 # or private one. A private package needs an org admin to make it public in the
-# package settings, or a pull secret in the chart, before the cluster can pull it.
+# package settings before the cluster can pull it (the chart has no imagePullSecrets).
 on:
   push:
     branches:

@@ -144,7 +144,7 @@ export function render(app) {
     // Local cluster defaults; staging and prod override all of it
     'chart/values.yaml': toYaml({
       ingress: { hostname: d.local_host, tls: false, annotations: {} },
-      controller: { image: d.image },
+      controller: { image: `${d.image}:main` },
       config: oauthConfig('staging', d.local_host, BACKEND.staging),
       extraDeploy: [],
     }),
