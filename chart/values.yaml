@@ -4,7 +4,7 @@ ingress:
   tls: false
   annotations: {}
 controller:
-  image: moleculemaker/test-frontend
+  image: ghcr.io/moleculemaker/test-frontend
 config:
   hostname: https://mmli.fastapi.staging.mmli2.ncsa.illinois.edu
   basePath: ""

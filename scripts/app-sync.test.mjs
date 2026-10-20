@@ -11,21 +11,30 @@ const generated = (app, file) => parse(render(app)[file]);
 const EZSPEC = { id: 'ezspecificity', name: 'EZSpecificity', family: 'alphasynthesis', matomo_site_id: 1 };
 const MUTAGENESIS = { id: 'mutagenesis', name: 'Mutagenesis', family: 'alphasynbio', matomo_site_id: 21 };
 
-test('alphasynthesis chart values match ezspecificity-frontend as deployed', () => {
-  assert.deepEqual(generated(EZSPEC, 'chart/values.staging.yaml'), fixture('ezspecificity.values.staging.yaml'));
-  assert.deepEqual(generated(EZSPEC, 'chart/values.prod.yaml'), fixture('ezspecificity.values.prod.yaml'));
+// Images are the expected difference from the live apps: the template pushes every app
+// to public ghcr with pr-N/staging and main tags. ezspecificity is still on Docker Hub,
+// and mutagenesis on private ghcr with :latest and a pull secret.
+const TAG = { staging: 'staging', prod: 'main' };
+
+test('alphasynthesis chart values match ezspecificity-frontend as deployed, apart from the image', () => {
+  for (const env of ['staging', 'prod']) {
+    const expected = fixture(`ezspecificity.values.${env}.yaml`);
+    const actual = generated(EZSPEC, `chart/values.${env}.yaml`);
+    assert.equal(actual.controller.image, `ghcr.io/moleculemaker/ezspecificity-frontend:${TAG[env]}`);
+    delete expected.controller;
+    delete actual.controller;
+    assert.deepEqual(actual, expected, env);
+  }
 });
 
-test('alphasynbio chart values match mutagenesis-frontend except the registry', () => {
-  // Expected differences: mutagenesis pushes to private ghcr with a pull secret; the
-  // template pushes to Docker Hub until #13 and needs no pull secret for public images.
+test('alphasynbio chart values match mutagenesis-frontend, apart from the image and pull secret', () => {
   for (const env of ['staging', 'prod']) {
     const expected = fixture(`mutagenesis.values.${env}.yaml`);
     delete expected.imagePullSecrets;
     delete expected.imagePullSecret;
     delete expected.controller;
     const actual = generated(MUTAGENESIS, `chart/values.${env}.yaml`);
-    assert.equal(actual.controller.image, `moleculemaker/mutagenesis-frontend:${env === 'prod' ? 'main' : 'staging'}`);
+    assert.equal(actual.controller.image, `ghcr.io/ibiofoundry/mutagenesis-frontend:${TAG[env]}`);
     delete actual.controller;
     assert.deepEqual(actual, expected, env);
   }
@@ -50,7 +59,7 @@ test('managed lines take the derived value and keep their marker', () => {
 
   assert.equal(out, [
     'env:',
-    '  MAIN_REPO: moleculemaker/ezspecificity-frontend # app:sync image',
+    '  MAIN_REPO: ghcr.io/moleculemaker/ezspecificity-frontend # app:sync image',
     '  OTHER: untouched',
     '        - ezspecificity.frontend.staging.mmli2.ncsa.illinois.edu # app:sync staging_host',
   ].join('\n'));
@@ -86,7 +95,7 @@ test('a tagged line the rewriter cannot parse is an error, not a silent skip', (
 
 test('a "- key: value" list item keeps its key', () => {
   const out = updateManagedLines('  - image: moleculemaker/old # app:sync image', derive(EZSPEC), 'x.yml');
-  assert.equal(out, '  - image: moleculemaker/ezspecificity-frontend # app:sync image');
+  assert.equal(out, '  - image: ghcr.io/moleculemaker/ezspecificity-frontend # app:sync image');
 });
 
 test('replacement patterns in the name are inserted literally', () => {
