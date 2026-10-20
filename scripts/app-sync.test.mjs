@@ -50,7 +50,7 @@ test('the identity module carries the family and the derived feedback address', 
 test('managed lines take the derived value and keep their marker', () => {
   const text = [
     'env:',
-    '  MAIN_REPO: moleculemaker/old-frontend # app:sync image',
+    '  IMAGE: moleculemaker/old-frontend # app:sync image',
     '  OTHER: untouched',
     '        - old.frontend.staging.example # app:sync staging_host',
   ].join('\n');
@@ -59,7 +59,7 @@ test('managed lines take the derived value and keep their marker', () => {
 
   assert.equal(out, [
     'env:',
-    '  MAIN_REPO: ghcr.io/moleculemaker/ezspecificity-frontend # app:sync image',
+    '  IMAGE: ghcr.io/moleculemaker/ezspecificity-frontend # app:sync image',
     '  OTHER: untouched',
     '        - ezspecificity.frontend.staging.mmli2.ncsa.illinois.edu # app:sync staging_host',
   ].join('\n'));
