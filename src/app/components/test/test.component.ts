@@ -1,13 +1,21 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from "@angular/forms";
+import { HttpErrorResponse } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { CheckboxModule } from "primeng/checkbox";
 import { ButtonModule } from "primeng/button";
 import { CommonModule } from "@angular/common";
 
-import { JobType } from "~/app/api/mmli-backend/v1";
+import { ToolInput } from "@api/tool-schemas";
+import { Problem } from "~/app/models/v1-job";
 import { JobTabComponent } from "~/app/components/job-tab/job-tab.component";
 import { TestService } from '~/app/services/test.service';
+
+/** What a result page hands this form: the job it shows, to edit and resubmit. */
+export interface LoadedJob {
+  job_id: string;
+  inputs: ToolInput;
+}
 
 @Component({
   selector: 'app-test',
@@ -27,7 +35,7 @@ import { TestService } from '~/app/services/test.service';
   }
 })
 export class TestComponent implements OnChanges {
-  @Input() formValue!: any; // TODO: update type
+  @Input() formValue?: LoadedJob;
   @Input() showJobTab = true;
   /**
    * The job id a submission resolved to, emitted just before navigating to it. The
@@ -38,9 +46,17 @@ export class TestComponent implements OnChanges {
   @Output() submitted = new EventEmitter<string>();
 
   form = new FormGroup({
+    // TODO: replace with your tool's inputs. The sample tool takes protein sequences.
+    sequences: new FormControl("", [Validators.required]),
     email: new FormControl("", [Validators.email]),
     agreeToSubscription: new FormControl(false),
   });
+
+  /** Files sent with the job, which the tool reads from its input directory. */
+  files: File[] = [];
+
+  /** The backend's reason for refusing the last submission, if it did. */
+  problem: Problem | null = null;
 
   currentPage = 'input';
 
@@ -51,28 +67,31 @@ export class TestComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['formValue'] && changes['formValue'].currentValue) {
-      this.form.patchValue(this.formValue);
+      this.form.patchValue({ sequences: toFasta(this.formValue!.inputs) });
     }
   }
 
-  /** The request payload as the job will store it in job_info. */
-  buildJobInfo(): Record<string, unknown> {
-    return {
-      // TODO: add job info here
-    };
+  onFilesSelected(event: Event): void {
+    this.files = Array.from((event.target as HTMLInputElement).files ?? []);
+  }
+
+  /** The input document, exactly as the tool's input schema describes it. */
+  buildInputs(): ToolInput {
+    // TODO: build your tool's input document from the form
+    return { sequences: fromFasta(this.form.controls.sequences.value ?? '') };
   }
 
   /**
    * True when the form would resubmit exactly the request the loaded job ran.
    * Email is a notification setting, not part of the request, so changing only it
-   * does not make a new job. Only a result page hands this form a job_id, so on
-   * the standalone page this is always false.
+   * does not make a new job. Files can't be compared with what the job received, so
+   * choosing any makes it a new request. Only a result page hands this form a job,
+   * so on the standalone page this is always false.
    */
   get requestUnchanged(): boolean {
     const job = this.formValue;
-    if (!job?.job_id) return false;
-    const { job_id, email, ...loadedJobInfo } = job;
-    return stableStringify(this.buildJobInfo()) === stableStringify(loadedJobInfo);
+    if (!job?.job_id || this.files.length) return false;
+    return stableStringify(this.buildInputs()) === stableStringify(job.inputs);
   }
 
   onSubmit() {
@@ -83,22 +102,41 @@ export class TestComponent implements OnChanges {
     // Resubmitting the loaded job's own request would only queue a duplicate of a
     // result that already exists, so return to that result instead.
     if (this.requestUnchanged) {
-      this.submitted.emit(this.formValue.job_id);
-      this.router.navigate(['test', 'result', this.formValue.job_id]);
+      this.submitted.emit(this.formValue!.job_id);
+      this.router.navigate(['result', this.formValue!.job_id]);
       return;
     }
 
-    this.service.createAndRunJob(
-      JobType.Somn, //TODO: use the correct job type
-      {
-        job_info: JSON.stringify(this.buildJobInfo()),
-        email: this.form.controls["email"].value || '',
-      }
-    ).subscribe((response) => {
-      this.submitted.emit(response.job_id);
-      this.router.navigate(['test', 'result', response.job_id]);
-    })
+    this.problem = null;
+    this.service.submit(
+      this.buildInputs(),
+      this.files,
+      this.form.controls.email.value || '',
+    ).subscribe({
+      next: (job) => {
+        this.submitted.emit(job.job_id);
+        this.router.navigate(['result', job.job_id]);
+      },
+      // /v1 errors are problem documents; anything else (a network failure) isn't
+      error: (error: HttpErrorResponse) => {
+        this.problem = error.error?.title
+          ? error.error
+          : { type: 'about:blank', title: 'The job could not be submitted', status: error.status };
+      },
+    });
   }
+}
+
+/** FASTA text to the sample tool's sequences: one per record, id from the header. */
+export function fromFasta(text: string): ToolInput['sequences'] {
+  return text.split('>').map((record) => record.trim()).filter(Boolean).map((record) => {
+    const [header, ...lines] = record.split('\n');
+    return { id: header.trim(), sequence: lines.join('').replace(/\s/g, '') };
+  });
+}
+
+export function toFasta(inputs: ToolInput): string {
+  return inputs.sequences.map(({ id, sequence }) => `>${id}\n${sequence}`).join('\n');
 }
 
 /** JSON with keys sorted at every level, so two equal payloads compare equal regardless of key order. */

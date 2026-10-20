@@ -10,7 +10,8 @@ import { ParamChangeRouteReuseStrategy } from "./param-change-route-reuse.strate
 const routes: Routes = [
   { path: "", pathMatch: "full", component: MainLayoutComponent },
   { path: 'test', component: TestComponent },
-  { path: 'test/result/:id', component: TestResultComponent },
+  // The backend's notification email links here: {frontend_url}/result/{job_id}
+  { path: 'result/:id', component: TestResultComponent },
 ];
 
 @NgModule({

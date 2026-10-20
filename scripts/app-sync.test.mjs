@@ -53,6 +53,11 @@ test('the identity module carries the family and the derived feedback address', 
   assert.match(ts, /feedbackEmail: "mutagenesis-feedback@ibiofoundry\.illinois\.edu"/);
 });
 
+test('the identity module names the job type the app submits, or null', () => {
+  assert.match(render({ ...MUTAGENESIS, job_type: 'mutagenesis' })['src/app/app-identity.ts'], /jobType: "mutagenesis"/);
+  assert.match(render(MUTAGENESIS)['src/app/app-identity.ts'], /jobType: null/);
+});
+
 test('managed lines take the derived value and keep their marker', () => {
   const text = [
     'env:',
