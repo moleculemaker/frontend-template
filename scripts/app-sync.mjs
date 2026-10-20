@@ -22,11 +22,14 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 export const FAMILIES = {
   alphasynthesis: {
+    // GitHub org the app's repo and ghcr package live in
+    ghcrOrg: 'moleculemaker',
     namespace: 'alphasynthesis',
     prodDomain: 'platform.moleculemaker.org',
     feedbackDomain: 'moleculemaker.org',
   },
   alphasynbio: {
+    ghcrOrg: 'ibiofoundry',
     namespace: 'ibiofoundry',
     prodDomain: 'platform.ibiofoundry.illinois.edu',
     feedbackDomain: 'ibiofoundry.illinois.edu',
@@ -90,8 +93,7 @@ export function derive(app) {
     prod_host: prodHost,
     // The cluster's own name for the prod app, redirected to prod_host
     prod_alias_host: `${app.id}.frontend.mmli2.ncsa.illinois.edu`,
-    // Docker Hub for every family until the template moves to ghcr (#13)
-    image: `moleculemaker/${app.id}-frontend`,
+    image: `ghcr.io/${family.ghcrOrg}/${app.id}-frontend`,
     feedback_email: `${app.id}-feedback@${family.feedbackDomain}`,
   };
 }
@@ -148,7 +150,7 @@ export function render(app) {
     // Local cluster defaults; staging and prod override all of it
     'chart/values.yaml': toYaml({
       ingress: { hostname: d.local_host, tls: false, annotations: {} },
-      controller: { image: d.image },
+      controller: { image: `${d.image}:main` },
       config: runtimeConfig('staging', 'local', d.local_host, BACKEND.staging, d.prod_host),
       extraDeploy: [],
     }),

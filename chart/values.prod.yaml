@@ -10,7 +10,7 @@ ingress:
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.middlewares: alphasynthesis-test-prod-domain-redirect@kubernetescrd
 controller:
-  image: moleculemaker/test-frontend:main
+  image: ghcr.io/moleculemaker/test-frontend:main
 config:
   hostname: https://mmli.fastapi.mmli2.ncsa.illinois.edu
   basePath: ""
