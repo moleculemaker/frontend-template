@@ -157,6 +157,8 @@ test('a robots meta tag that app:sync did not write is an error, launched or not
     '<meta name="robots" content="noindex">',
     '<meta name="robots" content="noindex, nofollow" />',
     '<meta content="noindex" name="robots" />',
+    '<meta name=robots content=noindex>',
+    '<meta name="googlebot" content="noindex" />',
   ];
   for (const tag of variants) {
     const html = `<head>\n    <title>t</title>\n    ${tag}\n</head>`;
