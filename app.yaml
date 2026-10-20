@@ -39,5 +39,9 @@ landing:
     groups: []
   alphasynbio: null
 
+# Whether the app has launched (its landing-page card is live). Until then prod pages
+# carry <meta name="robots" content="noindex">, so the unlisted prod site isn't indexed.
+launched: false
+
 # The frontend-template commit this app was created from. Null in the template itself.
 template_commit: null

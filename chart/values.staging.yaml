@@ -15,3 +15,5 @@ config:
   signOutUrl: https://mmli2.ncsa.illinois.edu/oauth2/sign_out?rd=https%3A%2F%2Ftest.frontend.staging.mmli2.ncsa.illinois.edu%2Fconfiguration
   userInfoUrl: https://mmli2.ncsa.illinois.edu/oauth2/userinfo
   frontendOnly: "false"
+  environment: staging
+  prodUrl: https://test.platform.moleculemaker.org

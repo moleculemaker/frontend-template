@@ -3,17 +3,23 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
 
-import { FAMILIES, derive, managedFiles, render, updateManagedLines, updateTitle, validate } from './app-sync.mjs';
+import { FAMILIES, derive, managedFiles, render, updateIndexHtml, updateManagedLines, validate } from './app-sync.mjs';
 
 const fixture = (name) => parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
 const generated = (app, file) => parse(render(app)[file]);
+// The live apps predate the staging banner's config keys
+const withoutBannerConfig = (values) => {
+  delete values.config.environment;
+  delete values.config.prodUrl;
+  return values;
+};
 
-const EZSPEC = { id: 'ezspecificity', name: 'EZSpecificity', family: 'alphasynthesis', matomo_site_id: 1 };
-const MUTAGENESIS = { id: 'mutagenesis', name: 'Mutagenesis', family: 'alphasynbio', matomo_site_id: 21 };
+const EZSPEC = { id: 'ezspecificity', name: 'EZSpecificity', family: 'alphasynthesis', matomo_site_id: 1, launched: true };
+const MUTAGENESIS = { id: 'mutagenesis', name: 'Mutagenesis', family: 'alphasynbio', matomo_site_id: 21, launched: true };
 
 test('alphasynthesis chart values match ezspecificity-frontend as deployed', () => {
-  assert.deepEqual(generated(EZSPEC, 'chart/values.staging.yaml'), fixture('ezspecificity.values.staging.yaml'));
-  assert.deepEqual(generated(EZSPEC, 'chart/values.prod.yaml'), fixture('ezspecificity.values.prod.yaml'));
+  assert.deepEqual(withoutBannerConfig(generated(EZSPEC, 'chart/values.staging.yaml')), fixture('ezspecificity.values.staging.yaml'));
+  assert.deepEqual(withoutBannerConfig(generated(EZSPEC, 'chart/values.prod.yaml')), fixture('ezspecificity.values.prod.yaml'));
 });
 
 test('alphasynbio chart values match mutagenesis-frontend except the registry', () => {
@@ -24,7 +30,7 @@ test('alphasynbio chart values match mutagenesis-frontend except the registry', 
     delete expected.imagePullSecrets;
     delete expected.imagePullSecret;
     delete expected.controller;
-    const actual = generated(MUTAGENESIS, `chart/values.${env}.yaml`);
+    const actual = withoutBannerConfig(generated(MUTAGENESIS, `chart/values.${env}.yaml`));
     assert.equal(actual.controller.image, `moleculemaker/mutagenesis-frontend:${env === 'prod' ? 'main' : 'staging'}`);
     delete actual.controller;
     assert.deepEqual(actual, expected, env);
@@ -62,13 +68,16 @@ test('an unknown managed-line key is an error, not a silent skip', () => {
 
 test('validation rejects a bad slug, an unknown family and a missing site id', () => {
   assert.deepEqual(validate(EZSPEC), []);
-  const errors = validate({ id: 'EZ Kinetics', name: 'x', family: 'other', matomo_site_id: null });
+  const errors = validate({ id: 'EZ Kinetics', name: 'x', family: 'other', matomo_site_id: null, launched: false });
   assert.equal(errors.length, 3);
 });
 
+const LAUNCHED = { name: 'x', launched: true };
+
 test('the page title is the app name, escaped', () => {
-  assert.equal(updateTitle('<head><title>test</title></head>', 'A & <B>'), '<head><title>A &amp; &lt;B></title></head>');
-  assert.throws(() => updateTitle('<head></head>', 'x'), /no <title>/);
+  assert.equal(updateIndexHtml('<head><title>test</title></head>', { name: 'A & <B>', launched: true }),
+    '<head><title>A &amp; &lt;B></title></head>');
+  assert.throws(() => updateIndexHtml('<head></head>', LAUNCHED), /no <title>/);
 });
 
 test('a tagged line the rewriter cannot parse is an error, not a silent skip', () => {
@@ -91,9 +100,10 @@ test('a "- key: value" list item keeps its key', () => {
 
 test('replacement patterns in the name are inserted literally', () => {
   const html = '<head><title>old</title></head>';
-  const once = updateTitle(html, "A $& B $` C $' D");
+  const app = { name: "A $& B $` C $' D", launched: true };
+  const once = updateIndexHtml(html, app);
   assert.equal(once, "<head><title>A $&amp; B $` C $' D</title></head>");
-  assert.equal(updateTitle(once, "A $& B $` C $' D"), once, 'stable on re-sync');
+  assert.equal(updateIndexHtml(once, app), once, 'stable on re-sync');
 });
 
 test('the id must leave room for derived resource names within a 63-character label', () => {
@@ -119,4 +129,25 @@ test('no tagged files is an empty list, not an error; other git failures still t
   assert.deepEqual(managedFiles(noMatch), []);
   const notARepo = () => { throw Object.assign(new Error('not a git repository'), { status: 128 }); };
   assert.throws(() => managedFiles(notARepo), /not a git repository/);
+});
+
+test('staging and local config turn the banner on and link prod; prod config turns it off', () => {
+  assert.deepEqual(
+    [generated(EZSPEC, 'chart/values.yaml').config, generated(EZSPEC, 'chart/values.staging.yaml').config,
+      generated(EZSPEC, 'chart/values.prod.yaml').config].map((c) => [c.environment, c.prodUrl]),
+    [['local', 'https://ezspecificity.platform.moleculemaker.org'],
+      ['staging', 'https://ezspecificity.platform.moleculemaker.org'],
+      ['prod', 'https://ezspecificity.platform.moleculemaker.org']]);
+});
+
+test('noindex is in the page until the app is launched, once, and stable on re-sync', () => {
+  const html = '<head>\n        <title>t</title>\n        <base href="/" />\n</head>';
+  const unlaunched = updateIndexHtml(html, { name: 't', launched: false });
+  assert.equal(unlaunched.match(/name="robots" content="noindex"/g).length, 1);
+  assert.equal(updateIndexHtml(unlaunched, { name: 't', launched: false }), unlaunched);
+  assert.equal(updateIndexHtml(unlaunched, { name: 't', launched: true }), html);
+});
+
+test('launched must be true or false', () => {
+  assert.equal(validate({ ...EZSPEC, launched: 'yes' }).length, 1);
 });

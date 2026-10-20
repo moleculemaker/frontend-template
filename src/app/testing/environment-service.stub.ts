@@ -13,6 +13,8 @@ const envConfig: EnvVars = {
   signOutUrl: 'http://environment-service.stub/signout',
   userInfoUrl: 'http://environment-service.stub/userinfo',
   frontendOnly: 'true',
+  environment: 'prod', // no staging banner in other components' specs
+  prodUrl: 'http://environment-service.stub',
 };
 
 export function provideEnvironmentServiceStub() {

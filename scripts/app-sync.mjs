@@ -10,7 +10,8 @@
 //   - Managed lines in hand-written files end with `# app:sync <key>`; only the value
 //     before that comment is replaced, with the derived value named by <key>. Every
 //     tracked file containing such a tag is managed (see managedFiles).
-//   - The <title> in src/index.html, so the raw page names the app before it boots.
+//   - The <title> and robots meta in src/index.html, so the raw page names the app and
+//     stays out of search results until app.yaml says it has launched.
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -74,6 +75,7 @@ export function validate(app) {
     errors.push(`family must be one of: ${Object.keys(FAMILIES).join(', ')}`);
   }
   if (!Number.isInteger(app?.matomo_site_id)) errors.push('matomo_site_id must be an integer');
+  if (typeof app?.launched !== 'boolean') errors.push('launched must be true or false');
   return errors;
 }
 
@@ -94,15 +96,19 @@ export function derive(app) {
   };
 }
 
-function oauthConfig(env, host, backend) {
+// `environment` drives the internal-testing banner: anything but prod shows it,
+// linking to `prodUrl`
+function runtimeConfig(auth, environment, host, backend, prodHost) {
   const rd = encodeURIComponent(`https://${host}/configuration`);
   return {
     hostname: backend,
     basePath: '',
-    signInUrl: `${AUTH[env]}/start?rd=${rd}`,
-    signOutUrl: `${AUTH[env]}/sign_out?rd=${rd}`,
-    userInfoUrl: `${AUTH[env]}/userinfo`,
+    signInUrl: `${AUTH[auth]}/start?rd=${rd}`,
+    signOutUrl: `${AUTH[auth]}/sign_out?rd=${rd}`,
+    userInfoUrl: `${AUTH[auth]}/userinfo`,
     frontendOnly: 'false',
+    environment,
+    prodUrl: `https://${prodHost}`,
   };
 }
 
@@ -143,14 +149,14 @@ export function render(app) {
     'chart/values.yaml': toYaml({
       ingress: { hostname: d.local_host, tls: false, annotations: {} },
       controller: { image: d.image },
-      config: oauthConfig('staging', d.local_host, BACKEND.staging),
+      config: runtimeConfig('staging', 'local', d.local_host, BACKEND.staging, d.prod_host),
       extraDeploy: [],
     }),
 
     'chart/values.staging.yaml': toYaml({
       ingress: { hostname: d.staging_host, tls: true, annotations: TLS_ANNOTATIONS },
       controller: { image: `${d.image}:staging` },
-      config: oauthConfig('staging', d.staging_host, BACKEND.staging),
+      config: runtimeConfig('staging', 'staging', d.staging_host, BACKEND.staging, d.prod_host),
     }),
 
     'chart/values.prod.yaml': toYaml({
@@ -164,7 +170,7 @@ export function render(app) {
         },
       },
       controller: { image: `${d.image}:main` },
-      config: oauthConfig('prod', d.prod_host, BACKEND.prod),
+      config: runtimeConfig('prod', 'prod', d.prod_host, BACKEND.prod, d.prod_host),
       extraDeploy: [{
         apiVersion: 'traefik.io/v1alpha1',
         kind: 'Middleware',
@@ -200,11 +206,17 @@ export function updateManagedLines(text, derived, file) {
   }).join('\n');
 }
 
-export function updateTitle(html, name) {
-  const escaped = name.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  if (!/<title>[^<]*<\/title>/.test(html)) throw new Error('src/index.html has no <title>');
-  // A function, so `$&` and friends in the name are inserted literally
-  return html.replace(/<title>[^<]*<\/title>/, () => `<title>${escaped}</title>`);
+const NOINDEX = /\n[ \t]*<meta name="robots" content="noindex" \/>/;
+
+export function updateIndexHtml(html, app) {
+  const escaped = app.name.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const title = /([ \t]*)<title>[^<]*<\/title>/;
+  if (!title.test(html)) throw new Error('src/index.html has no <title>');
+  // Functions, so `$&` and friends in the name are inserted literally
+  let out = html.replace(NOINDEX, () => '');
+  out = out.replace(title, (_, indent) => `${indent}<title>${escaped}</title>`
+    + (app.launched ? '' : `\n${indent}<meta name="robots" content="noindex" />`));
+  return out;
 }
 
 export function outputs(app, readFile) {
@@ -213,7 +225,7 @@ export function outputs(app, readFile) {
   for (const file of managedFiles()) {
     files[file] = updateManagedLines(readFile(file), derived, file);
   }
-  files['src/index.html'] = updateTitle(readFile('src/index.html'), app.name);
+  files['src/index.html'] = updateIndexHtml(readFile('src/index.html'), app);
   return files;
 }
 
@@ -241,7 +253,7 @@ function main(argv) {
     for (const file of Object.keys(render(app))) console.log(`  ${file}`);
     console.log('\nFiles with managed lines (# app:sync <key>):');
     for (const file of managedFiles()) console.log(`  ${file}`);
-    console.log('  src/index.html (<title>)');
+    console.log('  src/index.html (<title>, robots meta)');
     return 0;
   }
 

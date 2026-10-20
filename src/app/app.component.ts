@@ -7,6 +7,7 @@ import { RouterOutlet } from "@angular/router";
 
 import { APP_IDENTITY } from "./app-identity";
 import { BRANDING } from "./family-branding";
+import { StagingBannerComponent } from "./components/staging-banner/staging-banner.component";
 
 @Component({
     selector: "app-root",
@@ -17,6 +18,7 @@ import { BRANDING } from "./family-branding";
         MenuModule,
         NgIf,
         RouterOutlet,
+        StagingBannerComponent,
     ],
 })
 export class AppComponent {
