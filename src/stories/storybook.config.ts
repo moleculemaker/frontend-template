@@ -4,109 +4,35 @@ import { provideRouter, RouterModule } from '@angular/router';
 
 // Import all commonly used services and modules
 import { TestService } from '../app/services/test.service';
-import { BodyCreateJobJobTypeJobsPost, Job, JobType } from '../app/api/mmli-backend/v1';
+import { EXAMPLE_JOB, EXAMPLE_RESULTS } from '../app/services/test.examples';
+import { Job, JobStatus } from '../app/models/v1-job';
+import { ToolResults } from '../app/api/tool-schemas';
 import { Observable, of } from 'rxjs';
 
-// fixtures
-import errorJobStatus from './fixtures/job-status--error.json';
-import processingJobStatus from './fixtures/job-status--processing.json';
-import queuedJobStatus from './fixtures/job-status--queued.json';
-import completedJobStatus from './fixtures/job-status--completed.json';
-import errorJobResult from './fixtures/job-result--default.json';
-import completedJobResult from './fixtures/job-result--default.json';
+type TestCase = Extract<JobStatus, 'queued' | 'error' | 'processing' | 'completed'>;
 
-// Define a strategy interface
-interface TestServiceStrategy {
-  createAndRunJob(jobType: JobType, requestBody: BodyCreateJobJobTypeJobsPost): Observable<Job>;
-  getResultStatus(jobType: JobType, jobID: string): Observable<Job>;
-  getResult(jobType: JobType, jobID: string): Observable<any>;
-}
-
-// Implement concrete strategies
-class QueuedTestStrategy implements TestServiceStrategy {
-  createAndRunJob(): Observable<Job> {
-    return of(queuedJobStatus as Job);
-  }
-  getResultStatus(): Observable<Job> {
-    return this.createAndRunJob();
-  }
-  getResult(): Observable<any> {
-    return of({});
-  }
-}
-
-class ErrorTestStrategy implements TestServiceStrategy {
-  createAndRunJob(): Observable<Job> {
-    return of(errorJobStatus as Job);
-  }
-  getResultStatus(): Observable<Job> {
-    return this.createAndRunJob();
-  }
-  getResult(): Observable<any> {
-    return of(errorJobResult);
-  }
-}
-
-class ProcessingTestStrategy implements TestServiceStrategy {
-  createAndRunJob(): Observable<Job> {
-    return of(processingJobStatus as Job);
-  }
-  getResultStatus(): Observable<Job> {
-    return this.createAndRunJob();
-  }
-  getResult(): Observable<any> {
-    return of({});
-  }
-}
-
-class CompletedTestStrategy implements TestServiceStrategy {
-  createAndRunJob(): Observable<Job> {
-    return of(completedJobStatus as Job);
-  }
-  getResultStatus(): Observable<Job> {
-    return this.createAndRunJob();
-  }
-  getResult(): Observable<any> {
-    return of(completedJobResult);
-  }
-}
-
-// Factory method to create strategies
-function createTestStrategy(testCase: 'queued' | 'error' | 'processing' | 'completed'): TestServiceStrategy {
-  switch (testCase) {
-    case 'error':
-      return new ErrorTestStrategy();
-    case 'processing':
-      return new ProcessingTestStrategy();
-    case 'completed':
-      return new CompletedTestStrategy();
-    default:
-      return new QueuedTestStrategy();
-  }
-}
-
-// Updated MockTestService
+// A TestService whose job is always in one status, with the example results once completed
 export class MockTestService {
-  private strategy: TestServiceStrategy;
+  constructor(private testCase: TestCase = 'queued') { }
 
-  constructor(testCase: 'queued' | 'error' | 'processing' | 'completed' = 'queued') {
-    this.strategy = createTestStrategy(testCase);
+  setTestCase(testCase: TestCase) {
+    this.testCase = testCase;
   }
 
-  setTestCase(testCase: 'queued' | 'error' | 'processing' | 'completed') {
-    this.strategy = createTestStrategy(testCase);
+  submit(): Observable<Job> {
+    return this.getJob();
   }
 
-  createAndRunJob(jobType: JobType, requestBody: BodyCreateJobJobTypeJobsPost): Observable<Job> {
-    return this.strategy.createAndRunJob(jobType, requestBody);
+  getJob(): Observable<Job> {
+    return of({ ...EXAMPLE_JOB, status: this.testCase });
   }
 
-  getResultStatus(jobType: JobType, jobID: string): Observable<Job> {
-    return this.strategy.getResultStatus(jobType, jobID);
+  getResults(): Observable<ToolResults> {
+    return of(EXAMPLE_RESULTS);
   }
 
-  getResult(jobType: JobType, jobID: string): Observable<any> {
-    return this.strategy.getResult(jobType, jobID);
+  artifactUrl(jobId: string, name: string): string {
+    return `#${jobId}/${name}`;
   }
 }
 

@@ -16,7 +16,27 @@
           </div>
         </div>
 
-        <!-- TODO: Add content here -->
+        <!-- TODO: replace with your tool's inputs -->
+        <div class="flex flex-col gap-2">
+          <label for="sequences" class="font-semibold">Protein sequences (FASTA)</label>
+          <textarea id="sequences" data-testid="sequences" rows="8" class="w-full font-mono p-2 border rounded"
+            formControlName="sequences" placeholder=">insulin-b&#10;FVNQHLCGSHLVEALYLVCGERGFFYTPKT"></textarea>
+
+          <label for="files" class="font-semibold mt-4">Input files (optional)</label>
+          <input id="files" data-testid="files" type="file" multiple (change)="onFilesSelected($event)" />
+        </div>
+
+        @if (problem) {
+        <div class="mt-4 p-3 rounded border border-red-300 bg-red-50" data-testid="submit-problem" role="alert">
+          <p class="font-semibold">{{ problem.title }}</p>
+          @if (problem.detail) {
+          <p>{{ problem.detail }}</p>
+          }
+          @for (error of problem.errors ?? []; track $index) {
+          <p class="text-sm"><code>{{ error.pointer || '/' }}</code>: {{ error.detail }}</p>
+          }
+        </div>
+        }
       </div>
     </div>
 
@@ -47,7 +67,7 @@
       </div>
       <!-- TODO: update button -->
       <div class="flex flex-col items-end gap-2">
-        <p-button label="Generating routes using ACERetro" type="submit" styleClass="bg-[#224063]"
+        <p-button label="Submit" type="submit" styleClass="bg-[#224063]" data-testid="submit"
           [disabled]="form.invalid" iconPos="right" icon="pi pi-arrow-right"></p-button>
         @if (requestUnchanged) {
         <span class="text-sm opacity-75">

@@ -4,7 +4,7 @@ import { BehaviorSubject, combineLatest, interval, map, Observable } from "rxjs"
 import { NgIf, AsyncPipe } from "@angular/common";
 import { ProgressBarModule } from "primeng/progressbar";
 
-import { Job, JobStatus } from "~/app/api/mmli-backend/v1";
+import { Job } from "~/app/models/v1-job";
 
 @Component({
     selector: "app-loading",
@@ -27,6 +27,7 @@ export class LoadingComponent implements OnInit {
   estimatedTime: number;
   estimatedTimeString: string;
   showError$ = new BehaviorSubject(false);
+  showCanceled$ = new BehaviorSubject(false);
 
   form = new FormGroup({
     agreeToSubscription: new FormControl(false),
@@ -41,12 +42,15 @@ export class LoadingComponent implements OnInit {
     interval(1000),
   ]).pipe(
     map(([status, _]) => {
-      //TODO: queued job should return 0, wait for backend to fix the status error
-      switch (status.phase) {
+      switch (status.status) {
 
-        case JobStatus.Queued:
-        case JobStatus.Processing:
-          const jobStartedMs = (status.time_created || 0) * 1000; // use created time for estimation for now
+        // Waiting for a node (often the one GPU node) or its image; nothing has run yet
+        case 'queued':
+          return 0;
+
+        case 'processing':
+          // The backend does not record started_at yet, so fall back to submitted_at
+          const jobStartedMs = Date.parse(status.started_at ?? status.submitted_at ?? '') || Date.now();
           const jobElapsedMs = Date.now() - jobStartedMs;
           const coe = 2 / 5;
           const estimatedMs = this.estimatedTime * 1000;
@@ -62,11 +66,15 @@ export class LoadingComponent implements OnInit {
           sum += Math.pow(coe, i) * decimalTime;
           return sum * 100;
 
-        case JobStatus.Completed:
+        case 'completed':
           return 100;
 
-        case JobStatus.Error:
+        case 'error':
           this.showError$.next(true);
+          return 0;
+
+        case 'canceled':
+          this.showCanceled$.next(true);
           return 0;
       }
       return 0;

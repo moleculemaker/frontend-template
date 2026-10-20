@@ -5,7 +5,7 @@ import { ActivatedRouteSnapshot, BaseRouteReuseStrategy, Params } from '@angular
  * Recreate a routed component when its path params change.
  *
  * Angular's default strategy reuses a component whenever the route config is the
- * same, so navigating from `test/result/A` to `test/result/B` kept the result
+ * same, so navigating from `result/A` to `result/B` kept the result
  * component built for A: it read its job id from a snapshot once, and everything
  * it holds still described A. Comparing params here gives B a fresh instance,
  * exactly as opening the URL directly would.

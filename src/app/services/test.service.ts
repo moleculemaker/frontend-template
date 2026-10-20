@@ -1,15 +1,13 @@
 import { Injectable } from "@angular/core";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable, map, of } from "rxjs";
 
-import { BodyCreateJobJobTypeJobsPost, FilesService, Job, JobType, JobsService } from "../api/mmli-backend/v1";
+import { JobsService } from "@api/v1";
+import { ToolInput, ToolResults } from "@api/tool-schemas";
+import { APP_IDENTITY } from "~/app/app-identity";
+import { Job, JobResults } from "~/app/models/v1-job";
 import { EnvironmentService } from "./environment.service";
-
-// import { TestService as TestApiService } from "../api/mmli-backend/v1"; // TODO: use the correct service
-// import exampleStatus from '../../assets/example_status.json';
-// import example from '../../assets/example.json';
-
-const exampleStatus: any = "WARNING: please provide your own example_status.json";
-const example: any = "WARNING: please provide your own example.json";
+import { EXAMPLE_JOB, EXAMPLE_RESULTS } from "./test.examples";
 
 @Injectable({
   providedIn: "root",
@@ -17,53 +15,63 @@ const example: any = "WARNING: please provide your own example.json";
 export class TestService {
   frontendOnly = false;
 
-  constructor(
-    private jobsService: JobsService,
-    private filesService: FilesService,
-    private environmentService: EnvironmentService,
+  /** The mmli-backend tool this app submits to (app.yaml `job_type`). */
+  readonly tool = APP_IDENTITY.jobType;
 
-    // private apiService: TestApiService,
+  constructor(
+    private http: HttpClient,
+    private jobsService: JobsService,
+    private environmentService: EnvironmentService,
   ) {
     this.frontendOnly = this.environmentService.getEnvConfig().frontendOnly === "true";
   }
 
-  createAndRunJob(jobType: JobType, requestBody: BodyCreateJobJobTypeJobsPost): Observable<Job> {
+  /**
+   * Submit a job: the input document plus any files the tool reads from its input
+   * directory. Always multipart, which /v1 accepts with or without files.
+   *
+   * Not through the generated client: the endpoint accepts JSON or multipart, and the
+   * generator emits a JSON-only method for it.
+   */
+  submit(inputs: ToolInput, files: File[] = [], email = ''): Observable<Job> {
     if (this.frontendOnly) {
-      return of(exampleStatus as any);
+      return of(EXAMPLE_JOB);
     }
-    return this.jobsService.createJobJobTypeJobsPost(jobType, requestBody);
+    const body = new FormData();
+    body.append('inputs', JSON.stringify(inputs));
+    for (const file of files) {
+      body.append('files', file, file.name);
+    }
+    // The address goes in a header so the body stays exactly the tool's input schema
+    let headers = new HttpHeaders();
+    if (email) {
+      headers = headers.set('X-Notify-Email', email);
+    }
+    return this.http.post<Job>(`${this.basePath}/tools/${this.tool}/jobs`, body, { headers });
   }
 
-  getResultStatus(jobType: JobType, jobID: string): Observable<Job> {
-    if (this.frontendOnly) {
-      return of(exampleStatus as any);
-    }
-    return this.jobsService.listJobsByTypeAndJobIdJobTypeJobsJobIdGet(jobType, jobID)
-      .pipe(map((jobs) => jobs[0]));
+  /** /v1's base URL, which EnvironmentService sets from envvars.json. */
+  private get basePath(): string {
+    return this.jobsService.configuration.basePath!;
   }
 
-  getResult(jobType: JobType, jobID: string): Observable<any> {
+  getJob(jobId: string): Observable<Job> {
     if (this.frontendOnly) {
-      return of(example as any);
+      return of(EXAMPLE_JOB);
     }
-    return this.filesService.getResultsBucketNameResultsJobIdGet(jobType, jobID);
+    return this.jobsService.getJobJobsJobIdGet(jobId);
   }
 
-  getError(jobType: JobType, jobID: string): Observable<string> {
+  getResults(jobId: string): Observable<ToolResults> {
     if (this.frontendOnly) {
-      return of('error');
+      return of(EXAMPLE_RESULTS);
     }
-    return this.filesService.getErrorsBucketNameErrorsJobIdGet(jobType, jobID);
+    return this.jobsService.getResultsJobsJobIdResultsGet(jobId)
+      .pipe(map((response: JobResults<ToolResults>) => response.results));
   }
 
-  updateSubscriberEmail(jobType: JobType, jobId: string, email: string) {
-    if (this.frontendOnly) {
-      return of(exampleStatus as any);
-    }
-    return this.jobsService.patchExistingJobJobTypeJobsJobIdRunIdPatch(jobType, {
-      job_id: jobId,
-      run_id: 0,
-      email: email,
-    });
+  /** Where the backend serves one of the job's output files. */
+  artifactUrl(jobId: string, name: string): string {
+    return `${this.basePath}/jobs/${jobId}/artifacts/${encodeURIComponent(name)}`;
   }
 }
