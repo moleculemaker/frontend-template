@@ -1,7 +1,7 @@
-# Builds a Docker image for the test Frontend
+# Builds the frontend Docker image
 #
 # Usage:
-#     docker build -t moleculemaker/test-frontend .
+#     docker build -t <image> .
 #
 
 # Use official node image as the base image
@@ -32,7 +32,7 @@ RUN npm run build
 FROM nginx:1.23.3
 
 # Copy the build output to replace the default nginx contents
-COPY --from=build /usr/local/app/dist/test/browser /usr/share/nginx/html/
+COPY --from=build /usr/local/app/dist/app/browser /usr/share/nginx/html/
 
 # Copy the nginx config file, which has a try_files rule for SPA routing
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf

@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         env:
-          - test.frontend.staging.mmli2.ncsa.illinois.edu
+          - test.frontend.staging.mmli2.ncsa.illinois.edu # app:sync staging_host
     name: E2E on ${{ matrix.env }} (Cron)
     steps:
       - uses: actions/setup-node@v4

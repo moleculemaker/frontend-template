@@ -1,0 +1,43 @@
+# The identity of this app: the single source for everything that names it.
+#
+# Edit this file, then run `npm run app:sync` to regenerate the files derived from it
+# (listed by `npm run app:sync -- --list`). Never edit a generated file by hand: CI runs
+# `npm run app:sync -- --check` and fails if one has drifted from this file.
+
+# URL-safe slug: lowercase letters, digits and hyphens. It becomes the hostnames, the
+# image name and the Kubernetes resource names, so it is hard to change after launch.
+id: test
+
+# Shown in the header and the browser tab.
+name: test
+
+# alphasynthesis (Molecule Maker Lab Institute) or alphasynbio (NSF iBioFoundry). Picks
+# the header branding, prod domain, namespace and feedback address.
+family: alphasynthesis
+
+# The site for this app in https://matomo.mmli2.ncsa.illinois.edu. Each app needs its
+# own; -1 until it is created.
+matomo_site_id: -1
+
+# The mmli-backend job type this app submits, once registered there.
+job_type: null
+
+# The compute image the backend runs for this app (ghcr.io/<org>/<tool>-job:<tag>).
+compute_image: null
+
+# The Figma file and the node ids of frames marked final, by page.
+figma:
+  file_key: null
+  final_frames: {}
+
+# Landing-page cards. Every app has an AlphaSynthesis card, an AlphaSynBio card, or
+# both; list each under its landing page. `summary` is the card's description.
+landing:
+  summary: null
+  alphasynthesis:
+    tags: []
+    groups: []
+  alphasynbio: null
+
+# The frontend-template commit this app was created from. Null in the template itself.
+template_commit: null

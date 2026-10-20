@@ -16,7 +16,7 @@ spec:
         app: {{ .Release.Name }}
     spec:
       containers:
-        - name: test-frontend
+        - name: {{ .Chart.Name }}
           image: {{ .Values.controller.image }}
 
           env:

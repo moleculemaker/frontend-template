@@ -5,6 +5,9 @@ import { MenuModule } from "primeng/menu";
 import { NgIf } from "@angular/common";
 import { RouterOutlet } from "@angular/router";
 
+import { APP_IDENTITY } from "./app-identity";
+import { BRANDING } from "./family-branding";
+
 @Component({
     selector: "app-root",
     templateUrl: "./app.component.html",
@@ -17,8 +20,11 @@ import { RouterOutlet } from "@angular/router";
     ],
 })
 export class AppComponent {
+  readonly identity = APP_IDENTITY;
+  readonly branding = BRANDING;
+
   emailstring: string =
-    "mailto:test-feedback@moleculemaker.org?Subject=User feedback for test";
+    `mailto:${APP_IDENTITY.feedbackEmail}?subject=${encodeURIComponent(`User feedback for ${APP_IDENTITY.name}`)}`;
   showCite: boolean = false;
 
   showComingSoonPopup: boolean = false;

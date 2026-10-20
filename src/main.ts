@@ -11,6 +11,7 @@ import { AppComponent } from './app/app.component';
 import { provideStore } from '@ngrx/store';
 import { providePrimeNG } from 'primeng/config';
 import { AppRoutingModule } from './app/app-routing.module';
+import { APP_IDENTITY } from './app/app-identity';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeng/themes/aura';
 
@@ -38,7 +39,7 @@ bootstrapApplication(AppComponent, {
   providers: [
     importProvidersFrom(
       MatomoModule.forRoot({
-        siteId: -1,   //TODO: update site id after creating in Matomo
+        siteId: APP_IDENTITY.matomoSiteId,
         trackerUrl: 'https://matomo.mmli2.ncsa.illinois.edu/'
       }),
       MatomoRouterModule,

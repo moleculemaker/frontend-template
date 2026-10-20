@@ -15,8 +15,10 @@
     "openapi:live": "npm run openapi:sync && npm run openapi",
     "openapi:sync:local": "curl http://localhost:8080/openapi.json > openapi/mmli-backend.openapi.json && cat openapi/mmli-backend.openapi.json",
     "openapi:live:local": "npm run openapi:sync:local && npm run openapi",
-    "storybook": "ng run test:storybook",
-    "build-storybook": "ng run test:build-storybook"
+    "storybook": "ng run app:storybook",
+    "build-storybook": "ng run app:build-storybook",
+    "app:sync": "node scripts/app-sync.mjs",
+    "test:scripts": "node --test scripts/*.test.mjs"
   },
   "private": true,
   "dependencies": {
@@ -65,6 +67,7 @@
     "nightwatch": "3.8.1",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "yaml": "^2.8.1"
   }
 }
