@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
 
-import { derive, render, updateManagedLines, updateTitle, validate } from './app-sync.mjs';
+import { FAMILIES, derive, managedFiles, render, updateManagedLines, updateTitle, validate } from './app-sync.mjs';
 
 const fixture = (name) => parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
 const generated = (app, file) => parse(render(app)[file]);
@@ -87,4 +87,29 @@ test('a tagged line the rewriter cannot parse is an error, not a silent skip', (
 test('a "- key: value" list item keeps its key', () => {
   const out = updateManagedLines('  - image: moleculemaker/old # app:sync image', derive(EZSPEC), 'x.yml');
   assert.equal(out, '  - image: moleculemaker/ezspecificity-frontend # app:sync image');
+});
+
+test('replacement patterns in the name are inserted literally', () => {
+  const html = '<head><title>old</title></head>';
+  const once = updateTitle(html, "A $& B $` C $' D");
+  assert.equal(once, "<head><title>A $&amp; B $` C $' D</title></head>");
+  assert.equal(updateTitle(once, "A $& B $` C $' D"), once, 'stable on re-sync');
+});
+
+test('the id must leave room for derived resource names within a 63-character label', () => {
+  assert.deepEqual(validate({ ...EZSPEC, id: 'a'.repeat(40) }), []);
+  assert.equal(validate({ ...EZSPEC, id: 'a'.repeat(41) }).length, 1);
+});
+
+test('every family has header branding, and every branded family is deployable', () => {
+  const ts = readFileSync(new URL('../src/app/family-branding.ts', import.meta.url), 'utf8');
+  const branded = [...ts.matchAll(/^  (\w+): \{$/gm)].map((m) => m[1]).sort();
+  assert.deepEqual(branded, Object.keys(FAMILIES).sort());
+});
+
+test('managed files are every tracked file with a tag, outside scripts/ and docs', () => {
+  const files = managedFiles();
+  assert.ok(files.includes('.github/workflows/docker.yml'));
+  assert.ok(files.includes('.github/workflows/cron.yml'));
+  assert.ok(!files.some((f) => f.startsWith('scripts/') || f.endsWith('.md')));
 });

@@ -24,7 +24,7 @@ export class AppComponent {
   readonly branding = BRANDING;
 
   emailstring: string =
-    `mailto:${APP_IDENTITY.feedbackEmail}?Subject=User feedback for ${APP_IDENTITY.name}`;
+    `mailto:${APP_IDENTITY.feedbackEmail}?subject=${encodeURIComponent(`User feedback for ${APP_IDENTITY.name}`)}`;
   showCite: boolean = false;
 
   showComingSoonPopup: boolean = false;

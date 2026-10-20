@@ -25,9 +25,7 @@ on:
       - edited
       - created
 
-# Certain actions will only run when this is the main repo.
 env:
-  MAIN_REPO: moleculemaker/test-frontend # app:sync image
   DOCKERHUB_ORG: moleculemaker
 
 jobs:

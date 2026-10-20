@@ -8,8 +8,10 @@
 // Two kinds of output:
 //   - GENERATED_FILES are written whole and carry a "do not edit" header.
 //   - Managed lines in hand-written files end with `# app:sync <key>`; only the value
-//     before that comment is replaced, with the derived value named by <key>.
+//     before that comment is replaced, with the derived value named by <key>. Every
+//     tracked file containing such a tag is managed (see managedFiles).
 //   - The <title> in src/index.html, so the raw page names the app before it boots.
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,15 +19,13 @@ import { parse, stringify } from 'yaml';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-const FAMILIES = {
+export const FAMILIES = {
   alphasynthesis: {
-    org: 'moleculemaker',
     namespace: 'alphasynthesis',
     prodDomain: 'platform.moleculemaker.org',
     feedbackDomain: 'moleculemaker.org',
   },
   alphasynbio: {
-    org: 'iBioFoundry',
     namespace: 'ibiofoundry',
     prodDomain: 'platform.ibiofoundry.illinois.edu',
     feedbackDomain: 'ibiofoundry.illinois.edu',
@@ -41,12 +41,26 @@ const AUTH = {
   prod: 'https://auth.platform.moleculemaker.org/oauth2',
 };
 
-const MANAGED_FILES = ['.github/workflows/docker.yml', '.github/workflows/cron.yml'];
+// Leaves room for the longest derived name, `<id>-prod-domain-redirect`, within a
+// 63-character DNS label / Kubernetes name
+const MAX_ID_LENGTH = 40;
+
+const TAG = /#\s*app:sync\b/;
+
+// Every tracked file with a tag, so a tag can't be added somewhere that sync ignores.
+// scripts/ and docs are excluded because they describe the tag rather than use it.
+export function managedFiles() {
+  const out = execFileSync('git', ['grep', '-l', '-E', '#[[:space:]]*app:sync', '--', '.', ':!scripts', ':!*.md'],
+    { cwd: ROOT, encoding: 'utf8' });
+  return out.split('\n').filter(Boolean);
+}
 
 export function validate(app) {
   const errors = [];
   if (typeof app?.id !== 'string' || !/^[a-z][a-z0-9-]*[a-z0-9]$/.test(app.id)) {
     errors.push('id must be a lowercase slug (letters, digits, hyphens), e.g. ezkinetics');
+  } else if (app.id.length > MAX_ID_LENGTH) {
+    errors.push(`id must be at most ${MAX_ID_LENGTH} characters (it becomes DNS labels and Kubernetes names)`);
   }
   if (typeof app?.name !== 'string' || !app.name.trim()) errors.push('name is required');
   if (!FAMILIES[app?.family]) {
@@ -165,11 +179,14 @@ const MANAGED_LINE = /^(\s*(?:- (?:[\w-]+: )?|[\w-]+: ))(\S.*?)(\s+# app:sync ([
 
 export function updateManagedLines(text, derived, file) {
   return text.split('\n').map((line, i) => {
-    if (!/#\s*app:sync\b/.test(line)) return line;
+    if (!TAG.test(line)) return line;
     const m = line.match(MANAGED_LINE);
     // A tagged line that can't be rewritten would otherwise keep a stale value
     // while --check passes
-    if (!m) throw new Error(`${file}:${i + 1}: cannot rewrite this app:sync line; use "key: value # app:sync <key>" or "- value # app:sync <key>" on one line`);
+    if (!m) {
+      throw new Error(`${file}:${i + 1}: cannot rewrite this app:sync line; use "key: value # app:sync <key>" `
+        + 'or "- value # app:sync <key>" on one line. (A comment that only mentions the tag must be reworded.)');
+    }
     const key = m[4];
     if (!(key in derived)) throw new Error(`${file}: unknown app:sync key "${key}"`);
     return `${m[1]}${derived[key]}${m[3]}`;
@@ -179,13 +196,14 @@ export function updateManagedLines(text, derived, file) {
 export function updateTitle(html, name) {
   const escaped = name.replace(/&/g, '&amp;').replace(/</g, '&lt;');
   if (!/<title>[^<]*<\/title>/.test(html)) throw new Error('src/index.html has no <title>');
-  return html.replace(/<title>[^<]*<\/title>/, `<title>${escaped}</title>`);
+  // A function, so `$&` and friends in the name are inserted literally
+  return html.replace(/<title>[^<]*<\/title>/, () => `<title>${escaped}</title>`);
 }
 
 export function outputs(app, readFile) {
   const files = render(app);
   const derived = derive(app);
-  for (const file of MANAGED_FILES) {
+  for (const file of managedFiles()) {
     files[file] = updateManagedLines(readFile(file), derived, file);
   }
   files['src/index.html'] = updateTitle(readFile('src/index.html'), app.name);
@@ -215,7 +233,7 @@ function main(argv) {
     console.log('\nGenerated files:');
     for (const file of Object.keys(render(app))) console.log(`  ${file}`);
     console.log('\nFiles with managed lines (# app:sync <key>):');
-    for (const file of MANAGED_FILES) console.log(`  ${file}`);
+    for (const file of managedFiles()) console.log(`  ${file}`);
     console.log('  src/index.html (<title>)');
     return 0;
   }
