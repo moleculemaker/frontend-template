@@ -1,10 +1,9 @@
-import { timer, take, switchMap, tap, takeWhile, BehaviorSubject, filter, map, delay, shareReplay } from "rxjs";
-import { JobStatus, JobType } from "~/app/api/mmli-backend/v1";
+import { timer, take, switchMap, tap, takeWhile, BehaviorSubject, filter, delay, shareReplay } from "rxjs";
 import { TestService } from '~/app/services/test.service';
+import { TERMINAL_STATUSES } from '~/app/models/v1-job';
 
 export class JobResult {
     jobId: string;
-    jobType: JobType;
 
     isLoading$ = new BehaviorSubject(true); //TODO: change it to true
     resultLoaded$ = new BehaviorSubject(false);
@@ -21,15 +20,9 @@ export class JobResult {
      * refCount lets the poll stop when nothing is listening.
      */
     statusResponse$ = timer(0, 10000).pipe(
-        switchMap(() => this.service.getResultStatus(
-            this.jobType,
-            this.jobId,
-        )),
+        switchMap(() => this.service.getJob(this.jobId)),
         tap(() => this.resultLoaded$.value ? null : this.isLoading$.next(true)),
-        takeWhile((data) =>
-            data.phase === JobStatus.Processing
-            || data.phase === JobStatus.Queued
-            , true),
+        takeWhile((job) => !TERMINAL_STATUSES.includes(job.status), true),
         tap((data) => { console.log('job status: ', data) }),
         shareReplay({ bufferSize: 1, refCount: true }),
     );
@@ -37,9 +30,9 @@ export class JobResult {
     // Completion is read off the shared poll (filter + take(1)), so the result is
     // fetched exactly once and no second poll can miss the terminal status.
     jobResultResponse$ = this.statusResponse$.pipe(
-        filter((job) => job.phase === JobStatus.Completed),
+        filter((job) => job.status === 'completed'),
         take(1),
-        switchMap(() => this.service.getResult(this.jobType, this.jobId)),
+        switchMap(() => this.service.getResults(this.jobId)),
         delay(1000),
         tap(() => this.isLoading$.next(false)),
         tap(() => this.resultLoaded$.next(true)),

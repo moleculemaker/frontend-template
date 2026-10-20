@@ -135,6 +135,7 @@ export function render(app) {
       `  family: ${JSON.stringify(app.family)},`,
       `  matomoSiteId: ${app.matomo_site_id},`,
       `  feedbackEmail: ${JSON.stringify(d.feedback_email)},`,
+      `  jobType: ${JSON.stringify(app.job_type ?? null)},`,
       '} as const;',
       '',
     ].join('\n'),

@@ -3,13 +3,13 @@ import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { tap } from 'rxjs';
 
-import { JobType } from '~/app/api/mmli-backend/v1';
 import { JobResult } from '~/app/models/job-result';
 import { LoadingComponent } from '~/app/components/loading/loading.component';
 import { JobTabComponent } from "~/app/components/job-tab/job-tab.component";
 
 import { TestService } from '~/app/services/test.service';
-import { TestComponent } from '~/app/components/test/test.component';
+import { LoadedJob, TestComponent } from '~/app/components/test/test.component';
+import { ToolInput } from '@api/tool-schemas';
 
 @Component({
   selector: 'app-test-result',
@@ -29,13 +29,12 @@ import { TestComponent } from '~/app/components/test/test.component';
 })
 export class TestResultComponent extends JobResult {
   override jobId: string = this.route.snapshot.paramMap.get("id") || "example-id";
-  override jobType: JobType; //TODO: use the correct job type
-  
+
   response$ = this.jobResultResponse$;
 
   currentPage = 'result';
 
-  jobInfo: any = {};
+  loadedJob?: LoadedJob;
 
   constructor(
     service: TestService,
@@ -45,9 +44,13 @@ export class TestResultComponent extends JobResult {
     // The embedded form recognises a resubmit of this very job by the job_id.
     this.statusResponse$ = this.statusResponse$.pipe(
       tap((job) => {
-        this.jobInfo = { ...JSON.parse(job.job_info || '{}'), email: job.email || '', job_id: this.jobId };
+        this.loadedJob = { job_id: this.jobId, inputs: job.inputs as ToolInput };
       }),
     );
+  }
+
+  artifactUrl(name: string): string {
+    return this.service.artifactUrl(this.jobId, name);
   }
 
   /**

@@ -72,14 +72,14 @@ describe('ParamChangeRouteReuseStrategy', () => {
   // A's component, which had read its job id once from a snapshot.
   it('gives the result page a fresh component for a new job id', async () => {
     const harness = await setup(
-      [{ path: '', component: LayoutStubComponent, children: [{ path: 'test/result/:id', component: TestResultComponent }] }],
+      [{ path: '', component: LayoutStubComponent, children: [{ path: 'result/:id', component: TestResultComponent }] }],
       [provideNoopAnimations(), provideEnvironmentServiceStub(), provideHttpClient(), provideHttpClientTesting()],
     );
-    await harness.navigateByUrl('/test/result/A', LayoutStubComponent);
+    await harness.navigateByUrl('/result/A', LayoutStubComponent);
     const first = childInstance(harness, TestResultComponent);
     expect(first.jobId).toBe('A');
 
-    await harness.navigateByUrl('/test/result/B', LayoutStubComponent);
+    await harness.navigateByUrl('/result/B', LayoutStubComponent);
     const second = childInstance(harness, TestResultComponent);
 
     expect(second).not.toBe(first);

@@ -1,17 +1,24 @@
-<div class="flex flex-col mt-6" *ngIf="!(showError$.value)">
+@let status = (status$ | async)?.status;
+<div class="flex flex-col mt-6" *ngIf="!(showError$.value) && !(showCanceled$.value)">
     <p-progressBar
         class="w-full"
         [showValue]="false"
         [value]="value$ | async"
         [style]="{height: '10px'}"
     ></p-progressBar>
-    <div class="mt-2 text-end text-[--text-color-secondary]">
-        Estimated processing time: {{ estimatedTimeString }}
+    @if (status === 'queued') {
+    <div class="mt-2 text-end text-[--text-color-secondary]" data-testid="job-queued">
+        Queued: your job will start when a compute node is free.
     </div>
+    } @else {
+    <div class="mt-2 text-end text-[--text-color-secondary]" data-testid="job-processing">
+        Processing. Estimated processing time: {{ estimatedTimeString }}
+    </div>
+    }
 </div>
 
 <div
-    *ngIf="!(showError$.value)"
+    *ngIf="!(showError$.value) && !(showCanceled$.value)"
     class="my-8 flex max-h-[540px] grow items-center gap-12 rounded-md bg-[#F3F5FB] px-12 pb-12"
 >
     <img
@@ -27,7 +34,17 @@
 <div
     class="flex flex-col items-center justify-center h-full gap-4"
     *ngIf="(showError$.value)"
+    data-testid="job-error"
 >
     <h5 class="font-semibold text-center">Error</h5>
     <p class="text-center">An error occurs running the job.</p>
+</div>
+
+<div
+    class="flex flex-col items-center justify-center h-full gap-4"
+    *ngIf="(showCanceled$.value)"
+    data-testid="job-canceled"
+>
+    <h5 class="font-semibold text-center">Canceled</h5>
+    <p class="text-center">This job was canceled before it finished.</p>
 </div>

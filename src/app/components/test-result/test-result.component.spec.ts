@@ -38,7 +38,7 @@ describe('TestResultComponent', () => {
     it('hands the form the job id it is showing, so it can recognise an unchanged resubmit', async () => {
       await firstValueFrom(component.statusResponse$);
 
-      expect(component.jobInfo.job_id).toBe(component.jobId);
+      expect(component.loadedJob?.job_id).toBe(component.jobId);
     });
 
     // No route param in this fixture, so jobId falls back to the example id.

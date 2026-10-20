@@ -19,8 +19,10 @@ family: alphasynthesis
 # own; -1 until it is created.
 matomo_site_id: -1
 
-# The mmli-backend job type this app submits, once registered there.
-job_type: null
+# The mmli-backend job type this app submits, once registered there. Its input and
+# output schemas generate the app's job types (`npm run schemas:sync`). The template's
+# is the job-template sample tool, which the backend has not registered yet.
+job_type: job-template-sample
 
 # The compute image the backend runs for this app (ghcr.io/<org>/<tool>-job:<tag>).
 compute_image: null

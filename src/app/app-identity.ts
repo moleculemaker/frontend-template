@@ -5,4 +5,5 @@ export const APP_IDENTITY = {
   family: "alphasynthesis",
   matomoSiteId: -1,
   feedbackEmail: "test-feedback@moleculemaker.org",
+  jobType: "job-template-sample",
 } as const;

@@ -39,6 +39,26 @@ driven by `environment` and `prodUrl` in the chart's runtime config.
 The family selects the header branding (`src/app/family-branding.ts`) and the
 deployment conventions (prod domain, namespace). Everything else is shared.
 
+## The job flow (`/v1`)
+
+The app submits to mmli-backend's versioned API: the form (`/test`) posts the tool's
+input document and any files as multipart, Loading shows the job queued and then
+processing, and the results page is `/result/:id`, the route the backend's
+notification email links to.
+
+- **API client:** `src/app/api/v1`, generated from the snapshot in
+  `openapi/mmli-backend-v1.openapi.json`. `npm run openapi:v1:sync` refreshes the
+  snapshot from staging and regenerates; `npm run openapi:v1` only regenerates. It uses
+  openapi-generator 7.24.0 (`openapitools.v1.json`), because 6.6.0, which the legacy
+  client in `src/app/api/mmli-backend` uses, reads FastAPI's OpenAPI 3.1 parameters as
+  `any`.
+- **Job input and result types:** `src/app/api/tool-schemas.ts` (`ToolInput`,
+  `ToolResults`), generated from `schemas/input.schema.json` and
+  `schemas/output.schema.json`. `npm run schemas:sync` fetches both for `app.yaml`'s
+  `job_type` from the staging backend and regenerates; `npm run schemas` only
+  regenerates. CI runs `npm run schemas -- --check`. The template's schemas are the
+  sample tool's, from [job-template](https://github.com/moleculemaker/job-template).
+
 ## Components
 
 All builtin components are inside the `src/app/components` folder.
@@ -63,7 +83,11 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 
 ## Running end-to-end tests
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+Start the app (`npm start`), then run `npx nightwatch ./nightwatch --env chrome`. The
+job-flow test runs against a mock of the `/v1` API that it starts itself, and points the
+app at it by answering the `envvars.json` request over the Chrome DevTools Protocol, so
+it needs Chrome and a chromedriver that matches it (`CHROMEWEBDRIVER` is the directory
+containing one).
 
 ## Further help
 
