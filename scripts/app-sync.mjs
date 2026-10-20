@@ -214,6 +214,11 @@ export function updateIndexHtml(html, app) {
   if (!title.test(html)) throw new Error('src/index.html has no <title>');
   // Functions, so `$&` and friends in the name are inserted literally
   let out = html.replace(NOINDEX, () => '');
+  // Any other robots tag would survive launch and keep the site out of search
+  if (/<meta\b[^>]*\bname=["']robots["']/i.test(out)) {
+    throw new Error('src/index.html has a robots meta tag app:sync did not write; remove it '
+      + '(indexing is controlled by `launched` in app.yaml)');
+  }
   out = out.replace(title, (_, indent) => `${indent}<title>${escaped}</title>`
     + (app.launched ? '' : `\n${indent}<meta name="robots" content="noindex" />`));
   return out;

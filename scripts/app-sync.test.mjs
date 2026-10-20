@@ -151,3 +151,17 @@ test('noindex is in the page until the app is launched, once, and stable on re-s
 test('launched must be true or false', () => {
   assert.equal(validate({ ...EZSPEC, launched: 'yes' }).length, 1);
 });
+
+test('a robots meta tag that app:sync did not write is an error, launched or not', () => {
+  const variants = [
+    '<meta name="robots" content="noindex">',
+    '<meta name="robots" content="noindex, nofollow" />',
+    '<meta content="noindex" name="robots" />',
+  ];
+  for (const tag of variants) {
+    const html = `<head>\n    <title>t</title>\n    ${tag}\n</head>`;
+    for (const launched of [true, false]) {
+      assert.throws(() => updateIndexHtml(html, { name: 't', launched }), /robots/, `${tag} launched=${launched}`);
+    }
+  }
+});
