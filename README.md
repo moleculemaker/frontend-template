@@ -14,7 +14,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 `app.yaml` is the single source for everything that names the app: its id, display
 name, family (`alphasynthesis` or `alphasynbio`), Matomo site, backend job type, Figma
-frames and landing-page cards. The comments in the file describe each field.
+frames, landing-page cards, and whether it has launched. The comments in the file describe each field.
 
 After editing it, run:
 
@@ -30,6 +30,11 @@ feedback address) and every file it manages.
 
 Never edit a generated file by hand. CI runs `npm run app:sync -- --check` and fails if
 any is out of date with `app.yaml`.
+
+Until `launched: true`, `src/index.html` carries `<meta name="robots" content="noindex">`,
+so the unlisted prod site stays out of search results. Every non-prod deployment
+(staging, local) also shows an internal-testing banner linking to the released tool,
+driven by `environment` and `prodUrl` in the chart's runtime config.
 
 The family selects the header branding (`src/app/family-branding.ts`) and the
 deployment conventions (prod domain, namespace). Everything else is shared.
