@@ -29,6 +29,9 @@ jobs:
       - name: app:sync tests
         run: npm run test:scripts
 
+      - name: Job types are up to date with schemas/
+        run: npm run schemas -- --check
+
       - name: Unit tests
         run: npx ng test --watch=false --browsers=ChromeHeadless
 

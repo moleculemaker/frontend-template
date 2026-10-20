@@ -1,0 +1,645 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AlphaSynthesis Tools API",
+    "description": "\nA self-describing API for running the AlphaSynthesis computational tools.\n\nStart at `/v1/tools` to see what is available, `/v1/tools/{tool}/input-schema` for what\na tool accepts, then `POST /v1/tools/{tool}/jobs` to run it. Job responses carry a\n`links` object, so clients need never construct a URL.\n\nNo authentication. A job is reachable by anyone holding its id, which is an unguessable\nUUIDv4; see `/v1/service-info` for the access model.\n",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/service-info": {
+      "get": {
+        "tags": [
+          "Discovery"
+        ],
+        "summary": "Describe this service",
+        "operationId": "service_info_service_info_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Service Info Service Info Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools": {
+      "get": {
+        "tags": [
+          "Discovery"
+        ],
+        "summary": "List every available tool",
+        "description": "Return the catalog.\n\nSubjob types created by a parent job's coordinator are omitted: they cannot be\nsubmitted directly, so listing them as runnable would be misleading.",
+        "operationId": "list_tools_tools_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response List Tools Tools Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/{tool}": {
+      "get": {
+        "tags": [
+          "Discovery"
+        ],
+        "summary": "Describe one tool",
+        "operationId": "get_tool_tools__tool__get",
+        "parameters": [
+          {
+            "name": "tool",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tool"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Get Tool Tools  Tool  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/{tool}/input-schema": {
+      "get": {
+        "tags": [
+          "Discovery"
+        ],
+        "summary": "JSON Schema describing this tool's inputs",
+        "description": "Return the tool's JSON Schema 2020-12 document.\n\nSelf-contained by construction: every $ref resolves within the document, so it can\nbe handed straight to a validator or embedded in a tool definition.",
+        "operationId": "get_input_schema_tools__tool__input_schema_get",
+        "parameters": [
+          {
+            "name": "tool",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tool"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Get Input Schema Tools  Tool  Input Schema Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/{tool}/output-schema": {
+      "get": {
+        "tags": [
+          "Discovery"
+        ],
+        "summary": "JSON Schema describing this tool's results",
+        "description": "Return the JSON Schema 2020-12 document that this tool's results match.\n\nPublished only by tools on the generic job contract, whose results are served\nexactly as the container wrote them. Other tools' results are reshaped per tool.",
+        "operationId": "get_output_schema_tools__tool__output_schema_get",
+        "parameters": [
+          {
+            "name": "tool",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tool"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Get Output Schema Tools  Tool  Output Schema Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/{tool}/jobs": {
+      "post": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Submit a job",
+        "description": "Submit a job, as JSON or as multipart with files.\n\nJSON:       Content-Type: application/json, body is the tool's input document\nMultipart:  an `inputs` part holding that same document as JSON text, plus any\n            number of `files` parts\n\nMultipart exists because several tools need their input files present before the\njob starts. The legacy flow required uploading first to learn a job id and then\nsubmitting with it, which is what made client-chosen ids necessary. Here the server\nassigns the id and writes the files itself, so neither is needed.",
+        "operationId": "submit_job_tools__tool__jobs_post",
+        "parameters": [
+          {
+            "name": "tool",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Tool"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "X-Notify-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional. Where to send a message when the job finishes. Jobs here run for minutes to hours, so without it there is nothing to tell you it is done. Sent as a header so the request body stays exactly the published input schema.",
+              "title": "X-Notify-Email"
+            },
+            "description": "Optional. Where to send a message when the job finishes. Jobs here run for minutes to hours, so without it there is nothing to tell you it is done. Sent as a header so the request body stays exactly the published input schema."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Tool input document",
+                "description": "The tool's input document, exactly as published at /v1/tools/{tool}/input-schema. It is validated against that schema before the job starts, and a rejection names the offending field. No wrapper object: the body is the document itself.\n\nMost tools take an object; a few, such as somn, take an array. The example below is for novostoic-optstoic -- fetch the tool's own schema for anything else.",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "title": "Object input"
+                  },
+                  {
+                    "type": "array",
+                    "title": "Array input",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                ],
+                "example": {
+                  "primary_precursor": "MNXM1137670",
+                  "target_molecule": "MNXM26"
+                }
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_submit_job_tools__tool__jobs_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Job accepted and queued.",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "job_id": "4b3a85ee4efa42c3b5e5c1641e0588f4",
+                  "tool": "novostoic-optstoic",
+                  "status": "queued",
+                  "submitted_at": "2026-08-10T01:40:32Z",
+                  "inputs": {
+                    "primary_precursor": "MNXM1137670",
+                    "target_molecule": "MNXM26"
+                  },
+                  "provenance": {
+                    "image": "moleculemaker/novostoic",
+                    "command": "python ./novostoic-job.py optstoic"
+                  },
+                  "links": {
+                    "self": "/v1/jobs/4b3a85ee4efa42c3b5e5c1641e0588f4",
+                    "results": "/v1/jobs/4b3a85ee4efa42c3b5e5c1641e0588f4/results",
+                    "artifacts": "/v1/jobs/4b3a85ee4efa42c3b5e5c1641e0588f4/artifacts",
+                    "tool": "/v1/tools/novostoic-optstoic",
+                    "cancel": "/v1/jobs/4b3a85ee4efa42c3b5e5c1641e0588f4/cancel"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Get a job",
+        "operationId": "get_job_jobs__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The job.",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "job_id": "4b3a85ee4efa42c3b5e5c1641e0588f4",
+                  "tool": "novostoic-optstoic",
+                  "status": "queued",
+                  "submitted_at": "2026-08-10T01:40:32Z",
+                  "inputs": {
+                    "primary_precursor": "MNXM1137670",
+                    "target_molecule": "MNXM26"
+                  },
+                  "provenance": {
+                    "image": "moleculemaker/novostoic",
+                    "command": "python ./novostoic-job.py optstoic"
+                  },
+                  "links": {
+                    "self": "/v1/jobs/4b3a85ee4efa42c3b5e5c1641e0588f4",
+                    "results": "/v1/jobs/4b3a85ee4efa42c3b5e5c1641e0588f4/results",
+                    "artifacts": "/v1/jobs/4b3a85ee4efa42c3b5e5c1641e0588f4/artifacts",
+                    "tool": "/v1/tools/novostoic-optstoic",
+                    "cancel": "/v1/jobs/4b3a85ee4efa42c3b5e5c1641e0588f4/cancel"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/results": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Get a job's results",
+        "description": "Return post-processed results once the job has finished.\n\nStatus codes carry the meaning, so a polling client need not parse the body:\n\n  200  finished, results attached\n  409  still queued or running (Retry-After), or finished without usable results\n  404  no such job\n\nThe legacy endpoint answers 200 with a null body for \"running\", \"finished with\nnothing\" and \"no such job\" alike, which a script cannot tell apart.",
+        "operationId": "get_results_jobs__job_id__results_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/artifacts": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "List the files a job produced",
+        "description": "List raw output files.\n\nLogs and status-marker files are excluded unless `?include=logs`. Their content is\nwhatever the container printed, which can carry internal paths and configuration,\nand anyone holding a job id can read them.",
+        "operationId": "list_artifacts_jobs__job_id__artifacts_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Include"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/artifacts/{artifact_path}": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Download one output file",
+        "operationId": "get_artifact_jobs__job_id__artifacts__artifact_path__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "artifact_path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artifact Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/cancel": {
+      "post": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Cancel a running job",
+        "description": "Stop a job and mark it canceled.\n\nIdempotent: canceling an already-canceled job succeeds. A job that has already\nfinished cannot be canceled, and says so rather than pretending.",
+        "operationId": "cancel_job_jobs__job_id__cancel_post",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_submit_job_tools__tool__jobs_post": {
+        "properties": {
+          "inputs": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inputs"
+          },
+          "files": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "binary"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "title": "Body_submit_job_tools__tool__jobs_post"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
