@@ -23,9 +23,10 @@ npm run app:sync
 ```
 
 This regenerates the files derived from it: `src/app/app-identity.ts`, the chart
-(`chart/Chart.yaml`, `chart/values*.yaml`), the page title, and the lines marked
-`# app:sync <key>` in the workflows. `npm run app:sync -- --list` shows the derived
-values (hostnames, namespace, image, feedback address) and every file it manages.
+(`chart/Chart.yaml`, `chart/values*.yaml`), the page title, and any line marked
+`# app:sync <key>` (today only in the workflows) in any file git doesn't ignore.
+`npm run app:sync -- --list` shows the derived values (hostnames, namespace, image,
+feedback address) and every file it manages.
 
 Never edit a generated file by hand. CI runs `npm run app:sync -- --check` and fails if
 any is out of date with `app.yaml`.

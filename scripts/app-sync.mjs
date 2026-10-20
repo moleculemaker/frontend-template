@@ -47,12 +47,19 @@ const MAX_ID_LENGTH = 40;
 
 const TAG = /#\s*app:sync\b/;
 
-// Every tracked file with a tag, so a tag can't be added somewhere that sync ignores.
-// scripts/ and docs are excluded because they describe the tag rather than use it.
-export function managedFiles() {
-  const out = execFileSync('git', ['grep', '-l', '-E', '#[[:space:]]*app:sync', '--', '.', ':!scripts', ':!*.md'],
-    { cwd: ROOT, encoding: 'utf8' });
-  return out.split('\n').filter(Boolean);
+const gitGrep = (args) => execFileSync('git', ['grep', ...args], { cwd: ROOT, encoding: 'utf8' });
+
+// Every file with a tag (tracked, or untracked and not ignored), so a tag can't be
+// added somewhere that sync ignores. scripts/ and docs are excluded because they
+// describe the tag rather than use it.
+export function managedFiles(grep = gitGrep) {
+  try {
+    return grep(['--untracked', '-l', '-E', '#[[:space:]]*app:sync', '--', '.', ':!scripts', ':!*.md'])
+      .split('\n').filter(Boolean);
+  } catch (err) {
+    if (err.status === 1) return []; // git grep's "no matches"
+    throw err;
+  }
 }
 
 export function validate(app) {

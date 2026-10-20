@@ -113,3 +113,10 @@ test('managed files are every tracked file with a tag, outside scripts/ and docs
   assert.ok(files.includes('.github/workflows/cron.yml'));
   assert.ok(!files.some((f) => f.startsWith('scripts/') || f.endsWith('.md')));
 });
+
+test('no tagged files is an empty list, not an error; other git failures still throw', () => {
+  const noMatch = () => { throw Object.assign(new Error('Command failed'), { status: 1 }); };
+  assert.deepEqual(managedFiles(noMatch), []);
+  const notARepo = () => { throw Object.assign(new Error('not a git repository'), { status: 128 }); };
+  assert.throws(() => managedFiles(notARepo), /not a git repository/);
+});
