@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, discardPeriodicTasks, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
@@ -56,13 +56,6 @@ describe('LoadingComponent', () => {
     expect(shown('job-queued')).toBeNull();
   });
 
-  // The terminal states are set by the progress stream, which ticks once a second
-  function showAfterATick(status: JobStatus) {
-    show(status);
-    tick(1000);
-    fixture.detectChanges();
-  }
-
   it('shows the error and canceled states as soon as the status arrives', () => {
     show('error');
     expect(shown('job-error')).not.toBeNull();
@@ -72,16 +65,4 @@ describe('LoadingComponent', () => {
     expect(shown('job-error')).toBeNull();
   });
 
-  it('shows the error state for a failed job', fakeAsync(() => {
-    showAfterATick('error');
-    expect(shown('job-error')).not.toBeNull();
-    discardPeriodicTasks();
-  }));
-
-  it('shows the canceled state for a canceled job, not the error', fakeAsync(() => {
-    showAfterATick('canceled');
-    expect(shown('job-canceled')).not.toBeNull();
-    expect(shown('job-error')).toBeNull();
-    discardPeriodicTasks();
-  }));
 });

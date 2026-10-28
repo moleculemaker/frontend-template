@@ -60,17 +60,19 @@ export class TestComponent implements OnChanges {
 
   currentPage = 'input';
 
-  /** True from submit until the backend answers; a second submit meanwhile is ignored. */
+  /**
+   * True from submit until the navigation to the new job settles, or the submit fails.
+   * A second submit meanwhile is ignored. Clearing it when the response arrives instead
+   * would let a click during the navigation create a second job.
+   */
   submitting = false;
 
-  private destroyed = false;
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private service: TestService,
     private router: Router,
-  ) {
-    inject(DestroyRef).onDestroy(() => this.destroyed = true);
-  }
+  ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['formValue'] && changes['formValue'].currentValue) {
@@ -125,7 +127,7 @@ export class TestComponent implements OnChanges {
       // the upload, and cancelling would only hide the job it created. A response
       // after the user has left must not pull them back to it, though.
       next: (job) => {
-        if (this.destroyed) return;
+        if (this.destroyRef.destroyed) return;
         this.submitted.emit(job.job_id);
         // Enabled again only once the navigation is over, or a click meanwhile resubmits
         this.router.navigate(['result', job.job_id]).finally(() => this.submitting = false);
