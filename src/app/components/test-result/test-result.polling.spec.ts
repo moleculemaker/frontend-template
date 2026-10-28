@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
@@ -35,7 +35,6 @@ describe('TestResultComponent status polling', () => {
     expect(service.getJob).toHaveBeenCalledTimes(2);
 
     fixture.destroy();
-    discardPeriodicTasks();
   }));
 
   it('stops polling once the page is destroyed', fakeAsync(() => {
@@ -55,7 +54,8 @@ describe('TestResultComponent status polling', () => {
     fixture.destroy();
     tick(30000);
 
-    // No discardPeriodicTasks() here: a timer still running would also fail the test.
+    // The call count is the leak check. fakeAsync (zone.js 0.15) defaults to
+    // flush: true, which flushes leftover periodic timers instead of failing on them.
     expect(service.getJob).toHaveBeenCalledTimes(callsBeforeDestroy);
   }));
 });

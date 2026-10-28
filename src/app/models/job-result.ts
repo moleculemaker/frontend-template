@@ -4,10 +4,17 @@ import { TestService } from '~/app/services/test.service';
 import { APP_IDENTITY } from '~/app/app-identity';
 import { Problem, TERMINAL_STATUSES } from '~/app/models/v1-job';
 
-/** A network failure or a gateway error during a deploy: worth asking again. */
+/**
+ * A network failure, or a gateway error during a deploy: worth asking again. The
+ * backend's own errors are problem documents, and those are final, including its
+ * 502 "Job produced invalid results"; a gateway's 502 carries no problem document.
+ */
 function isTransient(error: HttpErrorResponse): boolean {
-    return error.status === 0 || error.status === 502 || error.status === 503 || error.status === 504;
+    return [0, 502, 503, 504].includes(error.status) && !error.error?.type;
 }
+
+/** Consecutive polls that may fail transiently before the page gives up (30 s at one per 10 s). */
+const TRANSIENT_POLLS = 3;
 
 export class JobResult {
     jobId: string;
@@ -38,10 +45,15 @@ export class JobResult {
      * still closed, and jobResultResponse$ completed without ever fetching.
      * refCount lets the poll stop when nothing is listening.
      */
+    private transientFailures = 0;
+
     statusResponse$ = timer(0, 10000).pipe(
-        // Ask again a couple of times on a transient error; anything else ends the poll
+        // A transient error skips this poll and the next tick asks again. The count runs
+        // across ticks, so a lasting outage still ends the poll; anything else ends it now.
         switchMap(() => this.service.getJob(this.jobId).pipe(
-            retry({ count: 2, delay: (error) => isTransient(error) ? timer(5000) : throwError(() => error) }),
+            tap(() => this.transientFailures = 0),
+            catchError((error: HttpErrorResponse) =>
+                isTransient(error) && ++this.transientFailures < TRANSIENT_POLLS ? EMPTY : throwError(() => error)),
         )),
         // /v1 job ids are global, so /result/<id> can name another tool's job, whose
         // inputs and results this page can't render
@@ -67,7 +79,9 @@ export class JobResult {
     jobResultResponse$ = this.statusResponse$.pipe(
         filter((job) => job.status === 'completed'),
         take(1),
-        switchMap(() => this.service.getResults(this.jobId)),
+        switchMap(() => this.service.getResults(this.jobId).pipe(
+            retry({ count: 2, delay: (error) => isTransient(error) ? timer(5000) : throwError(() => error) }),
+        )),
         catchError(this.fail),
         delay(1000),
         tap(() => this.isLoading$.next(false)),

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { provideHttpClient, HttpErrorResponse } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { defer, of, throwError } from 'rxjs';
 
 import { TestService } from '~/app/services/test.service';
 import { provideEnvironmentServiceStub } from '~/app/testing/environment-service.stub';
@@ -60,6 +60,36 @@ describe('TestResultComponent when a request fails', () => {
 
     expect(shown('load-error')).toBeNull();
     expect(shown('job-processing')).not.toBeNull();
+    fixture.destroy();
+  }));
+
+  it('gives up and shows an error when the outage lasts', fakeAsync(() => {
+    service.getJob.and.returnValue(throwError(() => httpError(502)));
+    create();
+    tick(0);
+    for (let i = 0; i < 5; i++) tick(10000);
+    fixture.detectChanges();
+
+    expect(shown('load-error')).not.toBeNull();
+    expect(shown('job-processing')).toBeNull();
+    fixture.destroy();
+  }));
+
+  it('retries a gateway 502 for the results, then shows them', fakeAsync(() => {
+    service.getJob.and.returnValue(of({ job_id: 'j1', tool: 'job-template-sample', status: 'completed' } as any));
+    // Cold, like HttpClient: each subscription is a new request
+    let requests = 0;
+    service.getResults.and.returnValue(defer(() => ++requests === 1
+      ? throwError(() => httpError(502))   // no problem document: the gateway, not the API
+      : of({ rows: [], artifacts: [] } as any)));
+    create();
+    tick(0);
+    tick(10000);
+    tick(1000);
+    fixture.detectChanges();
+
+    expect(shown('load-error')).toBeNull();
+    expect(requests).toBe(2);
     fixture.destroy();
   }));
 
