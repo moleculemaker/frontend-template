@@ -79,12 +79,29 @@ describe('TestComponent', () => {
       expect(submit).toHaveBeenCalledTimes(2);
     });
 
-    it('does not navigate to the job if the user has left the page', () => {
+    it('lets the request finish if the user leaves, but does not navigate to the job', () => {
       pressSubmit();
       fixture.destroy();
-      response.next({ job_id: 'job-b' } as Job);
 
+      // Cancelling would abort an upload the backend may already have accepted
+      expect(response.observed).toBeTrue();
+      response.next({ job_id: 'job-b' } as Job);
       expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('stays disabled until the navigation to the new job has finished', async () => {
+      let finishNavigation!: (ok: boolean) => void;
+      navigate.and.returnValue(new Promise<boolean>((resolve) => finishNavigation = resolve));
+      pressSubmit();
+      response.next({ job_id: 'job-b' } as Job);
+      response.complete();
+
+      pressSubmit();
+      expect(submit).toHaveBeenCalledTimes(1);
+
+      finishNavigation(true);
+      await fixture.whenStable();
+      expect(component.submitting).toBeFalse();
     });
   });
 

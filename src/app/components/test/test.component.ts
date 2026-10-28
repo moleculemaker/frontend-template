@@ -1,6 +1,4 @@
 import { Component, DestroyRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from "@angular/core";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { finalize } from "rxjs";
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Router } from "@angular/router";
@@ -65,12 +63,14 @@ export class TestComponent implements OnChanges {
   /** True from submit until the backend answers; a second submit meanwhile is ignored. */
   submitting = false;
 
-  private destroyRef = inject(DestroyRef);
+  private destroyed = false;
 
   constructor(
     private service: TestService,
     private router: Router,
-  ) { }
+  ) {
+    inject(DestroyRef).onDestroy(() => this.destroyed = true);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['formValue'] && changes['formValue'].currentValue) {
@@ -120,17 +120,19 @@ export class TestComponent implements OnChanges {
       this.buildInputs(),
       this.files,
       this.form.controls.email.value || '',
-    ).pipe(
-      finalize(() => this.submitting = false),
-      // A response after the user has left must not pull them back to the job
-      takeUntilDestroyed(this.destroyRef),
     ).subscribe({
+      // Not cancelled when the page goes away: the backend may already have accepted
+      // the upload, and cancelling would only hide the job it created. A response
+      // after the user has left must not pull them back to it, though.
       next: (job) => {
+        if (this.destroyed) return;
         this.submitted.emit(job.job_id);
-        this.router.navigate(['result', job.job_id]);
+        // Enabled again only once the navigation is over, or a click meanwhile resubmits
+        this.router.navigate(['result', job.job_id]).finally(() => this.submitting = false);
       },
       // /v1 errors are problem documents; anything else (a network failure) isn't
       error: (error: HttpErrorResponse) => {
+        this.submitting = false;
         this.problem = error.error?.title
           ? error.error
           : { type: 'about:blank', title: 'The job could not be submitted', status: error.status };
