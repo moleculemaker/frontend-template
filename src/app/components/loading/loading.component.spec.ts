@@ -4,7 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { provideEnvironmentServiceStub } from '~/app/testing/environment-service.stub';
 
-import { of } from 'rxjs';
+import { NEVER, of } from 'rxjs';
 
 import { Job, JobStatus } from '~/app/models/v1-job';
 import { LoadingComponent } from './loading.component';
@@ -34,6 +34,14 @@ describe('LoadingComponent', () => {
   it('should create', () => {
     show('processing');
     expect(component).toBeTruthy();
+  });
+
+  it('claims neither queued nor processing before the first status arrives', () => {
+    fixture.componentRef.setInput('status$', NEVER);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="job-processing"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="job-queued"]')).toBeNull();
   });
 
   it('says a queued job is waiting, not running', () => {

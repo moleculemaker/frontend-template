@@ -10,7 +10,7 @@
     <div class="mt-2 text-end text-[--text-color-secondary]" data-testid="job-queued">
         Queued: your job will start when a compute node is free.
     </div>
-    } @else {
+    } @else if (status === 'processing') {
     <div class="mt-2 text-end text-[--text-color-secondary]" data-testid="job-processing">
         Processing. Estimated processing time: {{ estimatedTimeString }}
     </div>
