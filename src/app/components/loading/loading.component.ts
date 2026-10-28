@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
-import { BehaviorSubject, combineLatest, interval, map, Observable } from "rxjs";
+import { combineLatest, interval, map, Observable } from "rxjs";
 import { NgIf, AsyncPipe } from "@angular/common";
 import { ProgressBarModule } from "primeng/progressbar";
 
@@ -26,8 +26,6 @@ export class LoadingComponent implements OnInit {
 
   estimatedTime: number;
   estimatedTimeString: string;
-  showError$ = new BehaviorSubject(false);
-  showCanceled$ = new BehaviorSubject(false);
 
   form = new FormGroup({
     agreeToSubscription: new FormControl(false),
@@ -69,13 +67,7 @@ export class LoadingComponent implements OnInit {
         case 'completed':
           return 100;
 
-        case 'error':
-          this.showError$.next(true);
-          return 0;
-
-        case 'canceled':
-          this.showCanceled$.next(true);
-          return 0;
+        // 'error' and 'canceled' have no progress; the template shows their own screens
       }
       return 0;
     }

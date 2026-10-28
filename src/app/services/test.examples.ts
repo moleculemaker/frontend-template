@@ -1,12 +1,14 @@
 import { ToolResults } from "@api/tool-schemas";
 import { Job } from "~/app/models/v1-job";
+import { APP_IDENTITY } from "~/app/app-identity";
 
 // What frontendOnly mode shows instead of calling the backend. TODO: replace with an
 // example job and results for your tool. These are the sample tool's, from
 // moleculemaker/job-template examples/.
 export const EXAMPLE_JOB: Job = {
   job_id: 'example-id',
-  tool: 'job-template-sample',
+  // Must match app.yaml's job_type, or the result page rejects it as another tool's job
+  tool: APP_IDENTITY.jobType,
   status: 'completed',
   parent_job_id: null,
   submitted_at: '2026-10-20T12:00:00Z',
@@ -23,7 +25,7 @@ export const EXAMPLE_JOB: Job = {
     self: '/v1/jobs/example-id',
     results: '/v1/jobs/example-id/results',
     artifacts: '/v1/jobs/example-id/artifacts',
-    tool: '/v1/tools/job-template-sample',
+    tool: `/v1/tools/${APP_IDENTITY.jobType}`,
     cancel: '/v1/jobs/example-id/cancel',
   },
 };

@@ -1,5 +1,5 @@
 @let status = (status$ | async)?.status;
-<div class="flex flex-col mt-6" *ngIf="!(showError$.value) && !(showCanceled$.value)">
+<div class="flex flex-col mt-6" *ngIf="status !== 'error' && status !== 'canceled'">
     <p-progressBar
         class="w-full"
         [showValue]="false"
@@ -18,7 +18,7 @@
 </div>
 
 <div
-    *ngIf="!(showError$.value) && !(showCanceled$.value)"
+    *ngIf="status !== 'error' && status !== 'canceled'"
     class="my-8 flex max-h-[540px] grow items-center gap-12 rounded-md bg-[#F3F5FB] px-12 pb-12"
 >
     <img
@@ -33,7 +33,7 @@
 
 <div
     class="flex flex-col items-center justify-center h-full gap-4"
-    *ngIf="(showError$.value)"
+    *ngIf="status === 'error'"
     data-testid="job-error"
 >
     <h5 class="font-semibold text-center">Error</h5>
@@ -42,7 +42,7 @@
 
 <div
     class="flex flex-col items-center justify-center h-full gap-4"
-    *ngIf="(showCanceled$.value)"
+    *ngIf="status === 'canceled'"
     data-testid="job-canceled"
 >
     <h5 class="font-semibold text-center">Canceled</h5>

@@ -63,6 +63,15 @@ describe('LoadingComponent', () => {
     fixture.detectChanges();
   }
 
+  it('shows the error and canceled states as soon as the status arrives', () => {
+    show('error');
+    expect(shown('job-error')).not.toBeNull();
+
+    show('canceled');
+    expect(shown('job-canceled')).not.toBeNull();
+    expect(shown('job-error')).toBeNull();
+  });
+
   it('shows the error state for a failed job', fakeAsync(() => {
     showAfterATick('error');
     expect(shown('job-error')).not.toBeNull();
