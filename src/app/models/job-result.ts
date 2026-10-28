@@ -1,19 +1,33 @@
-import { timer, take, switchMap, tap, takeWhile, BehaviorSubject, filter, delay, shareReplay, catchError, retry, throwError, map, EMPTY, Observable } from "rxjs";
+import { timer, take, switchMap, exhaustMap, tap, takeWhile, BehaviorSubject, filter, delay, shareReplay, catchError, retry, throwError, map, timeout, defer, EMPTY, Observable, TimeoutError } from "rxjs";
 import { HttpErrorResponse } from "@angular/common/http";
 import { TestService } from '~/app/services/test.service';
 import { APP_IDENTITY } from '~/app/app-identity';
 import { Problem, TERMINAL_STATUSES } from '~/app/models/v1-job';
 
-/**
- * A network failure, or a gateway error during a deploy: worth asking again. The
- * backend's own errors are problem documents, and those are final, including its
- * 502 "Job produced invalid results"; a gateway's 502 carries no problem document.
- */
-function isTransient(error: HttpErrorResponse): boolean {
-    return [0, 502, 503, 504].includes(error.status) && !error.error?.type;
+/** An RFC 9457 problem document from the backend, rather than a gateway page or a network error. */
+function isProblemDocument(body: unknown): boolean {
+    // Not just `.type`: for a network failure Angular's XHR backend puts the XHR
+    // ProgressEvent here, and its `type` is 'error'
+    return !!body && typeof body === 'object' && typeof (body as Problem).title === 'string';
 }
 
-/** Consecutive polls that may fail transiently before the page gives up (30 s at one per 10 s). */
+/**
+ * A network failure, a request that took longer than a poll, or a gateway error during
+ * a deploy: worth asking again. The backend's own errors are problem documents, and
+ * those are final, including its 502 "Job produced invalid results".
+ */
+function isTransient(error: unknown): boolean {
+    if (error instanceof TimeoutError) return true;
+    return error instanceof HttpErrorResponse
+        && [0, 502, 503, 504].includes(error.status) && !isProblemDocument(error.error);
+}
+
+const POLL_MS = 10000;
+
+/**
+ * The page gives up on the third poll in a row that fails transiently: 20 s after the
+ * first failure when they fail fast, 30 s when each runs into the POLL_MS timeout.
+ */
 const TRANSIENT_POLLS = 3;
 
 export class JobResult {
@@ -26,13 +40,18 @@ export class JobResult {
     loadProblem$ = new BehaviorSubject<Problem | null>(null);
 
     /** Stop polling and show why. /v1 errors are problem documents; anything else isn't. */
-    private fail = (error: HttpErrorResponse): Observable<never> => {
-        this.loadProblem$.next(error.error?.title
+    private fail = (error: unknown): Observable<never> => {
+        this.loadProblem$.next(error instanceof HttpErrorResponse && isProblemDocument(error.error)
             ? error.error
-            : { type: 'about:blank', title: 'The job could not be loaded', status: error.status });
+            // a gateway page, a network failure, or the poll timeout
+            : { type: 'about:blank', title: 'The job could not be loaded',
+                status: error instanceof HttpErrorResponse ? error.status : 0 });
         this.isLoading$.next(false);
         return EMPTY;
     };
+
+    /** Polls in a row that failed transiently; reset when the poll (re)starts or succeeds. */
+    private transientFailures = 0;
 
     /**
      * One shared poll: every consumer (template `| async`, jobResultResponse$, and
@@ -45,14 +64,20 @@ export class JobResult {
      * still closed, and jobResultResponse$ completed without ever fetching.
      * refCount lets the poll stop when nothing is listening.
      */
-    private transientFailures = 0;
-
-    statusResponse$ = timer(0, 10000).pipe(
+    statusResponse$ = defer(() => {
+        // refCount restarts the poll after every consumer has left, e.g. while the
+        // Input tab is open; a fresh poll starts its count afresh
+        this.transientFailures = 0;
+        return timer(0, POLL_MS);
+    }).pipe(
         // A transient error skips this poll and the next tick asks again. The count runs
         // across ticks, so a lasting outage still ends the poll; anything else ends it now.
-        switchMap(() => this.service.getJob(this.jobId).pipe(
+        // exhaustMap, not switchMap, so a slow request is not cancelled by the next tick
+        // before its failure is counted; timeout bounds one that never answers.
+        exhaustMap(() => this.service.getJob(this.jobId).pipe(
+            timeout(POLL_MS),
             tap(() => this.transientFailures = 0),
-            catchError((error: HttpErrorResponse) =>
+            catchError((error: unknown) =>
                 isTransient(error) && ++this.transientFailures < TRANSIENT_POLLS ? EMPTY : throwError(() => error)),
         )),
         // /v1 job ids are global, so /result/<id> can name another tool's job, whose

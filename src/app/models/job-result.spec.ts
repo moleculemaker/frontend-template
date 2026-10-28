@@ -1,5 +1,6 @@
 import { fakeAsync, tick } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { NEVER, Observable, of, throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { JobResult } from './job-result';
 import { JobStatus } from '~/app/models/v1-job';
@@ -94,5 +95,53 @@ describe('JobResult polling lifecycle', () => {
 
     expect(service.getJob).toHaveBeenCalledTimes(1);
     expect(service.getResults).toHaveBeenCalledTimes(1);
+  }));
+});
+
+describe('JobResult when the backend cannot be reached', () => {
+  const job = { job_id: 'job-1', tool: 'job-template-sample', status: 'processing' };
+
+  /** What Angular's XHR backend reports for a network failure: status 0 and the XHR ProgressEvent. */
+  const networkError = () => new HttpErrorResponse({ error: new ProgressEvent('error'), status: 0 });
+
+  function make(getJob: () => Observable<any>) {
+    const service: any = { getJob: jasmine.createSpy('getJob').and.callFake(getJob), getResults: jasmine.createSpy('getResults') };
+    const jr = new JobResult(service);
+    jr.jobId = 'job-1';
+    return jr;
+  }
+
+  it('retries a network failure (status 0) instead of giving up at once', fakeAsync(() => {
+    let calls = 0;
+    const jr = make(() => ++calls === 1 ? throwError(networkError) : of(job));
+    const sub = jr.statusResponse$.subscribe();
+    tick(0);
+    tick(10000);
+
+    expect(jr.loadProblem$.value).toBeNull();
+    sub.unsubscribe();
+  }));
+
+  it('gives up on a request that never answers', fakeAsync(() => {
+    const jr = make(() => NEVER);
+    const sub = jr.statusResponse$.subscribe();
+    for (let i = 0; i < 6; i++) tick(10000);
+
+    expect(jr.loadProblem$.value).not.toBeNull();
+    sub.unsubscribe();
+  }));
+
+  it('starts counting failures afresh when the poll restarts', fakeAsync(() => {
+    let failing = true;
+    const jr = make(() => failing ? throwError(networkError) : of(job));
+    let sub = jr.statusResponse$.subscribe();
+    tick(0);
+    tick(10000);   // two failures, one short of giving up
+    sub.unsubscribe();   // e.g. the user opens the Input tab
+
+    sub = jr.statusResponse$.subscribe();
+    tick(0);       // one more failure after the restart
+    expect(jr.loadProblem$.value).toBeNull();
+    sub.unsubscribe();
   }));
 });
