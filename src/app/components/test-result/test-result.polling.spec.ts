@@ -15,7 +15,7 @@ import { TestResultComponent } from './test-result.component';
 describe('TestResultComponent status polling', () => {
   it('makes one status request per poll while the loading screen is shown', fakeAsync(() => {
     const service = jasmine.createSpyObj<TestService>('TestService', ['getJob', 'getResults']);
-    service.getJob.and.callFake(() => of({ status: 'processing' } as any));
+    service.getJob.and.callFake(() => of({ tool: 'job-template-sample', status: 'processing' } as any));
 
     TestBed.configureTestingModule({
       imports: [TestResultComponent],
@@ -36,5 +36,26 @@ describe('TestResultComponent status polling', () => {
 
     fixture.destroy();
     discardPeriodicTasks();
+  }));
+
+  it('stops polling once the page is destroyed', fakeAsync(() => {
+    const service = jasmine.createSpyObj<TestService>('TestService', ['getJob', 'getResults']);
+    service.getJob.and.callFake(() => of({ tool: 'job-template-sample', status: 'processing' } as any));
+
+    TestBed.configureTestingModule({
+      imports: [TestResultComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
+                  provideEnvironmentServiceStub(), { provide: TestService, useValue: service }],
+    });
+    const fixture: ComponentFixture<TestResultComponent> = TestBed.createComponent(TestResultComponent);
+    fixture.detectChanges();
+    tick(0);
+    const callsBeforeDestroy = service.getJob.calls.count();
+
+    fixture.destroy();
+    tick(30000);
+
+    // No discardPeriodicTasks() here: a timer still running would also fail the test.
+    expect(service.getJob).toHaveBeenCalledTimes(callsBeforeDestroy);
   }));
 });

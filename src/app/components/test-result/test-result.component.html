@@ -29,7 +29,14 @@
     </div>
   </div>
 
-  @if (isLoading$ | async) {
+  @if (loadProblem$ | async; as problem) {
+    <div class="flex flex-col items-center justify-center h-full gap-4" data-testid="load-error">
+      <h5 class="font-semibold text-center">{{ problem.title }}</h5>
+      @if (problem.detail) {
+        <p class="text-center">{{ problem.detail }}</p>
+      }
+    </div>
+  } @else if (isLoading$ | async) {
     <app-loading [status$]="statusResponse$"></app-loading>
   }
 

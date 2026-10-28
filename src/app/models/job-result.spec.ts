@@ -14,7 +14,7 @@ function makeJobResult(statuses: JobStatus[], resultValue: any = {}) {
   let call = 0;
   const service: any = {
     getJob: jasmine.createSpy('getJob')
-      .and.callFake(() => of({ status: statuses[Math.min(call++, statuses.length - 1)] })),
+      .and.callFake(() => of({ tool: 'job-template-sample', status: statuses[Math.min(call++, statuses.length - 1)] })),
     getResults: jasmine.createSpy('getResults').and.returnValue(of(resultValue)),
   };
   const jr = new JobResult(service);
