@@ -122,11 +122,14 @@ describe('JobResult when the backend cannot be reached', () => {
     sub.unsubscribe();
   }));
 
-  it('gives up on a request that never answers', fakeAsync(() => {
+  it('gives up 28 s in when no request answers', fakeAsync(() => {
+    // Polls at 0, 10 and 20 s each time out after 8 s, shorter than the 10 s poll, so
+    // no tick is dropped while a request is still open
     const jr = make(() => NEVER);
     const sub = jr.statusResponse$.subscribe();
-    for (let i = 0; i < 6; i++) tick(10000);
-
+    tick(27999);
+    expect(jr.loadProblem$.value).toBeNull();
+    tick(1);
     expect(jr.loadProblem$.value).not.toBeNull();
     sub.unsubscribe();
   }));

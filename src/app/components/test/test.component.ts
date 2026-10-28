@@ -7,7 +7,7 @@ import { ButtonModule } from "primeng/button";
 import { CommonModule } from "@angular/common";
 
 import { ToolInput } from "@api/tool-schemas";
-import { Problem } from "~/app/models/v1-job";
+import { Problem, isProblemDocument } from "~/app/models/v1-job";
 import { JobTabComponent } from "~/app/components/job-tab/job-tab.component";
 import { TestService } from '~/app/services/test.service';
 
@@ -135,7 +135,7 @@ export class TestComponent implements OnChanges {
       // /v1 errors are problem documents; anything else (a network failure) isn't
       error: (error: HttpErrorResponse) => {
         this.submitting = false;
-        this.problem = error.error?.title
+        this.problem = isProblemDocument(error.error)
           ? error.error
           : { type: 'about:blank', title: 'The job could not be submitted', status: error.status };
       },

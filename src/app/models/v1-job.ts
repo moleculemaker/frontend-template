@@ -53,3 +53,10 @@ export interface Problem {
   /** For invalid input: a JSON Pointer into the submitted document, and what is wrong there */
   errors?: { pointer: string; detail: string }[];
 }
+
+/** An RFC 9457 problem document from the backend, rather than a gateway page or a network error. */
+export function isProblemDocument(body: unknown): body is Problem {
+  // Not just `.type`: for a network failure Angular's XHR backend puts the XHR
+  // ProgressEvent here, and its `type` is 'error'
+  return !!body && typeof body === 'object' && typeof (body as Problem).title === 'string';
+}

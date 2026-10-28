@@ -2,14 +2,7 @@ import { timer, take, switchMap, exhaustMap, tap, takeWhile, BehaviorSubject, fi
 import { HttpErrorResponse } from "@angular/common/http";
 import { TestService } from '~/app/services/test.service';
 import { APP_IDENTITY } from '~/app/app-identity';
-import { Problem, TERMINAL_STATUSES } from '~/app/models/v1-job';
-
-/** An RFC 9457 problem document from the backend, rather than a gateway page or a network error. */
-function isProblemDocument(body: unknown): boolean {
-    // Not just `.type`: for a network failure Angular's XHR backend puts the XHR
-    // ProgressEvent here, and its `type` is 'error'
-    return !!body && typeof body === 'object' && typeof (body as Problem).title === 'string';
-}
+import { Problem, TERMINAL_STATUSES, isProblemDocument } from '~/app/models/v1-job';
 
 /**
  * A network failure, a request that took longer than a poll, or a gateway error during
@@ -24,9 +17,16 @@ function isTransient(error: unknown): boolean {
 
 const POLL_MS = 10000;
 
+/** Clearly shorter than POLL_MS: with exhaustMap, a tick that arrives while a request is open is dropped. */
+const REQUEST_TIMEOUT_MS = 8000;
+
+/** A results download can be large, but a stalled one must still end. */
+const RESULTS_TIMEOUT_MS = 2 * 60 * 1000;
+
 /**
  * The page gives up on the third poll in a row that fails transiently: 20 s after the
- * first failure when they fail fast, 30 s when each runs into the POLL_MS timeout.
+ * first failure when they fail fast, 28 s in when no request answers (the polls at 0,
+ * 10 and 20 s each time out after REQUEST_TIMEOUT_MS).
  */
 const TRANSIENT_POLLS = 3;
 
@@ -75,7 +75,7 @@ export class JobResult {
         // exhaustMap, not switchMap, so a slow request is not cancelled by the next tick
         // before its failure is counted; timeout bounds one that never answers.
         exhaustMap(() => this.service.getJob(this.jobId).pipe(
-            timeout(POLL_MS),
+            timeout(REQUEST_TIMEOUT_MS),
             tap(() => this.transientFailures = 0),
             catchError((error: unknown) =>
                 isTransient(error) && ++this.transientFailures < TRANSIENT_POLLS ? EMPTY : throwError(() => error)),
@@ -105,6 +105,7 @@ export class JobResult {
         filter((job) => job.status === 'completed'),
         take(1),
         switchMap(() => this.service.getResults(this.jobId).pipe(
+            timeout(RESULTS_TIMEOUT_MS),
             retry({ count: 2, delay: (error) => isTransient(error) ? timer(5000) : throwError(() => error) }),
         )),
         catchError(this.fail),
