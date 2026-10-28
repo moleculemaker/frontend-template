@@ -18,6 +18,14 @@ export const EXAMPLE_JOB: Job = {
       { id: 'glucagon', sequence: 'HSQGTFTSDYSKYLDSRRAQDFVQWLMNT' },
     ],
   },
+  provenance: { image: null, image_digest: null, command: null },
+  links: {
+    self: '/v1/jobs/example-id',
+    results: '/v1/jobs/example-id/results',
+    artifacts: '/v1/jobs/example-id/artifacts',
+    tool: '/v1/tools/job-template-sample',
+    cancel: '/v1/jobs/example-id/cancel',
+  },
 };
 
 export const EXAMPLE_RESULTS: ToolResults = {

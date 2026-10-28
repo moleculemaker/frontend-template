@@ -21,6 +21,21 @@ export interface Job {
   finished_at: string | null;
   /** The input document as submitted */
   inputs: unknown;
+  provenance: {
+    /** The configured image reference, which may be untagged or mutable */
+    image: string | null;
+    /** What actually ran; null until the watcher reads it from the pod */
+    image_digest: string | null;
+    command: string | null;
+  };
+  links: {
+    self: string;
+    results: string;
+    artifacts: string;
+    tool: string;
+    cancel: string;
+    parent?: string;
+  };
 }
 
 export interface JobResults<T> {
