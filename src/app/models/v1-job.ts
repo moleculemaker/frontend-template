@@ -1,0 +1,62 @@
+/**
+ * The /v1 job resource and results envelope, as mmli-backend renders them
+ * (`_job_document` and `get_results` in app/routers/v1/jobs.py).
+ *
+ * Written by hand: /v1's OpenAPI declares no response schemas, so the generated
+ * client types every response as `any`.
+ */
+export type JobStatus = 'queued' | 'processing' | 'completed' | 'error' | 'canceled';
+
+/** Statuses after which the job never changes again. */
+export const TERMINAL_STATUSES: readonly JobStatus[] = ['completed', 'error', 'canceled'];
+
+export interface Job {
+  job_id: string;
+  tool: string;
+  status: JobStatus;
+  parent_job_id: string | null;
+  /** ISO 8601, UTC */
+  submitted_at: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  /** The input document as submitted */
+  inputs: unknown;
+  provenance: {
+    /** The configured image reference, which may be untagged or mutable */
+    image: string | null;
+    /** What actually ran; null until the watcher reads it from the pod */
+    image_digest: string | null;
+    command: string | null;
+  };
+  links: {
+    self: string;
+    results: string;
+    artifacts: string;
+    tool: string;
+    cancel: string;
+    parent?: string;
+  };
+}
+
+export interface JobResults<T> {
+  job_id: string;
+  tool: string;
+  results: T;
+}
+
+/** An RFC 9457 problem document; every /v1 error is one. */
+export interface Problem {
+  type: string;
+  title: string;
+  status: number;
+  detail?: string;
+  /** For invalid input: a JSON Pointer into the submitted document, and what is wrong there */
+  errors?: { pointer: string; detail: string }[];
+}
+
+/** An RFC 9457 problem document from the backend, rather than a gateway page or a network error. */
+export function isProblemDocument(body: unknown): body is Problem {
+  // Not just `.type`: for a network failure Angular's XHR backend puts the XHR
+  // ProgressEvent here, and its `type` is 'error'
+  return !!body && typeof body === 'object' && typeof (body as Problem).title === 'string';
+}

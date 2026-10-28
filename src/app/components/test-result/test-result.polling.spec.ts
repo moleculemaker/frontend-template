@@ -1,10 +1,9 @@
-import { ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
-import { JobStatus } from '~/app/api/mmli-backend/v1';
 import { TestService } from '~/app/services/test.service';
 import { provideEnvironmentServiceStub } from '~/app/testing/environment-service.stub';
 import { TestResultComponent } from './test-result.component';
@@ -15,8 +14,8 @@ import { TestResultComponent } from './test-result.component';
  */
 describe('TestResultComponent status polling', () => {
   it('makes one status request per poll while the loading screen is shown', fakeAsync(() => {
-    const service = jasmine.createSpyObj<TestService>('TestService', ['getResultStatus', 'getResult']);
-    service.getResultStatus.and.callFake(() => of({ phase: JobStatus.Processing } as any));
+    const service = jasmine.createSpyObj<TestService>('TestService', ['getJob', 'getResults']);
+    service.getJob.and.callFake(() => of({ tool: 'job-template-sample', status: 'processing' } as any));
 
     TestBed.configureTestingModule({
       imports: [TestResultComponent],
@@ -30,12 +29,33 @@ describe('TestResultComponent status polling', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('app-loading')).not.toBeNull();
-    expect(service.getResultStatus).toHaveBeenCalledTimes(1);
+    expect(service.getJob).toHaveBeenCalledTimes(1);
 
     tick(10000);
-    expect(service.getResultStatus).toHaveBeenCalledTimes(2);
+    expect(service.getJob).toHaveBeenCalledTimes(2);
 
     fixture.destroy();
-    discardPeriodicTasks();
+  }));
+
+  it('stops polling once the page is destroyed', fakeAsync(() => {
+    const service = jasmine.createSpyObj<TestService>('TestService', ['getJob', 'getResults']);
+    service.getJob.and.callFake(() => of({ tool: 'job-template-sample', status: 'processing' } as any));
+
+    TestBed.configureTestingModule({
+      imports: [TestResultComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]),
+                  provideEnvironmentServiceStub(), { provide: TestService, useValue: service }],
+    });
+    const fixture: ComponentFixture<TestResultComponent> = TestBed.createComponent(TestResultComponent);
+    fixture.detectChanges();
+    tick(0);
+    const callsBeforeDestroy = service.getJob.calls.count();
+
+    fixture.destroy();
+    tick(30000);
+
+    // The call count is the leak check. fakeAsync (zone.js 0.15) defaults to
+    // flush: true, which flushes leftover periodic timers instead of failing on them.
+    expect(service.getJob).toHaveBeenCalledTimes(callsBeforeDestroy);
   }));
 });

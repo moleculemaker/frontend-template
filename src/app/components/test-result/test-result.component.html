@@ -1,7 +1,7 @@
 <app-job-tab [tab]="currentPage" (onTabChange)="currentPage = $event"></app-job-tab>
 
 @if (currentPage === 'input') {
-<app-test [formValue]="jobInfo" [showJobTab]="false" (submitted)="onResubmitted($event)"></app-test>
+<app-test [formValue]="loadedJob" [showJobTab]="false" (submitted)="onResubmitted($event)"></app-test>
 
 } @else {
 <!-- Model Results -->
@@ -18,7 +18,7 @@
         </h5>
         <h6 class="text-text-secondary leading-lg">
           Submission Time:
-          {{ (status.time_created || 0) * 1000 | date : "short" }}
+          {{ status.submitted_at | date : "short" }}
         </h6>
       </div>
     }
@@ -29,18 +29,38 @@
     </div>
   </div>
 
-  @if (isLoading$ | async) {
+  @if (loadProblem$ | async; as problem) {
+    <div class="flex flex-col items-center justify-center h-full gap-4" data-testid="load-error">
+      <h5 class="font-semibold text-center">{{ problem.title }}</h5>
+      @if (problem.detail) {
+        <p class="text-center">{{ problem.detail }}</p>
+      }
+    </div>
+  } @else if (isLoading$ | async) {
     <app-loading [status$]="statusResponse$"></app-loading>
   }
 
   <div class="flex flex-col gap-8" [class.hidden]="isLoading$ | async">
     @let response = response$ | async;
     @if (response) {
-
-
-      <!-- TODO: display result here -->
-
-
+      <!-- TODO: display your tool's results. These are the sample tool's. -->
+      <table class="w-full text-left" data-testid="results-table">
+        <thead>
+          <tr><th>ID</th><th>Length</th><th>Molecular weight (Da)</th></tr>
+        </thead>
+        <tbody>
+          @for (row of response.rows; track $index) {
+          <tr><td>{{ row.id }}</td><td>{{ row.length }}</td><td>{{ row.molecular_weight_da }}</td></tr>
+          }
+        </tbody>
+      </table>
+      @if (response.artifacts.length) {
+      <ul>
+        @for (artifact of response.artifacts; track artifact.name) {
+        <li><a [href]="artifactUrl(artifact.name)" download>{{ artifact.description || artifact.name }}</a></li>
+        }
+      </ul>
+      }
     }
   </div>
 </div>

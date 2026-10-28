@@ -6,6 +6,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatomoModule, MatomoRouterModule } from 'ngx-matomo-client';
 import { MenuModule } from 'primeng/menu';
 import { ApiModule, Configuration } from '@api/mmli-backend/v1';
+import { provideApi as provideV1Api } from '@api/v1';
 import { DialogModule } from 'primeng/dialog';
 import { AppComponent } from './app/app.component';
 import { provideStore } from '@ngrx/store';
@@ -49,6 +50,8 @@ bootstrapApplication(AppComponent, {
       DialogModule,
       AppRoutingModule,
     ),
+    // basePath is set from envvars.json by EnvironmentService
+    provideV1Api({}),
     EnvironmentService,
     provideAppInitializer(() => {
       const initializerFn = (initAppFn)(inject(EnvironmentService));
