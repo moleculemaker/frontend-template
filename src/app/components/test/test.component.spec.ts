@@ -4,7 +4,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 
 import { LoadedJob, TestComponent, fromFasta, toFasta } from './test.component';
 import { TestService } from '~/app/services/test.service';
@@ -50,6 +50,42 @@ describe('TestComponent', () => {
     component.onSubmit();
 
     expect(submit).toHaveBeenCalledWith({ sequences: fromFasta(FASTA) }, [file], 'a@b.c');
+  });
+
+  describe('while a submission is in flight', () => {
+    let response: Subject<Job>;
+
+    beforeEach(() => {
+      response = new Subject<Job>();
+      submit.and.returnValue(response);
+    });
+
+    // Through the form's (ngSubmit) binding, as a double click would arrive
+    const pressSubmit = () =>
+      fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+
+    it('ignores a second submit, so a double click creates one job', () => {
+      pressSubmit();
+      pressSubmit();
+
+      expect(submit).toHaveBeenCalledTimes(1);
+    });
+
+    it('allows submitting again after the backend refuses the input', () => {
+      pressSubmit();
+      response.error(new HttpErrorResponse({ status: 422, error: { title: 'Invalid input', status: 422 } }));
+      pressSubmit();
+
+      expect(submit).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not navigate to the job if the user has left the page', () => {
+      pressSubmit();
+      fixture.destroy();
+      response.next({ job_id: 'job-b' } as Job);
+
+      expect(navigate).not.toHaveBeenCalled();
+    });
   });
 
   it('emits the created job id once the submission resolves, then navigates to it', () => {

@@ -1,4 +1,6 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import { Component, DestroyRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { finalize } from "rxjs";
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from "@angular/forms";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Router } from "@angular/router";
@@ -60,6 +62,11 @@ export class TestComponent implements OnChanges {
 
   currentPage = 'input';
 
+  /** True from submit until the backend answers; a second submit meanwhile is ignored. */
+  submitting = false;
+
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private service: TestService,
     private router: Router,
@@ -95,7 +102,7 @@ export class TestComponent implements OnChanges {
   }
 
   onSubmit() {
-    if (!this.form.valid) {
+    if (!this.form.valid || this.submitting) {
       return;
     }
 
@@ -108,10 +115,15 @@ export class TestComponent implements OnChanges {
     }
 
     this.problem = null;
+    this.submitting = true;
     this.service.submit(
       this.buildInputs(),
       this.files,
       this.form.controls.email.value || '',
+    ).pipe(
+      finalize(() => this.submitting = false),
+      // A response after the user has left must not pull them back to the job
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: (job) => {
         this.submitted.emit(job.job_id);
