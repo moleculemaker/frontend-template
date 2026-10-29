@@ -15,6 +15,7 @@ const envConfig: EnvVars = {
   frontendOnly: 'true',
   environment: 'prod', // no staging banner in other components' specs
   prodUrl: 'http://environment-service.stub',
+  matomoMode: 'direct',
 };
 
 export function provideEnvironmentServiceStub() {

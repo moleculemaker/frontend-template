@@ -73,6 +73,14 @@ spec:
                 # Optional: config without it means no banner, not a failed pod
                 optional: true
 
+          - name: MATOMO_MODE
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-config
+                key: matomoMode
+                # Optional: config without it means direct tracking, not a failed pod
+                optional: true
+
           ports:
             - containerPort: 80
           imagePullPolicy: Always

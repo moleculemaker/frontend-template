@@ -3,7 +3,7 @@ import { importProvidersFrom, inject, provideAppInitializer } from '@angular/cor
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatomoModule, MatomoRouterModule } from 'ngx-matomo-client';
+import { MatomoInitializerService, MatomoModule, MatomoRouterModule, MatomoTracker } from 'ngx-matomo-client';
 import { MenuModule } from 'primeng/menu';
 import { ApiModule, Configuration } from '@api/mmli-backend/v1';
 import { DialogModule } from 'primeng/dialog';
@@ -14,10 +14,6 @@ import { AppRoutingModule } from './app/app-routing.module';
 import { APP_IDENTITY } from './app/app-identity';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeng/themes/aura';
-
-const initAppFn = (envService: EnvironmentService) => {
-  return () => envService.loadEnvConfig("/assets/config/envvars.json");
-};
 
 const MyPreset = definePreset(Aura, {
   semantic: {
@@ -38,10 +34,8 @@ const MyPreset = definePreset(Aura, {
 bootstrapApplication(AppComponent, {
   providers: [
     importProvidersFrom(
-      MatomoModule.forRoot({
-        siteId: APP_IDENTITY.matomoSiteId,
-        trackerUrl: 'https://matomo.mmli2.ncsa.illinois.edu/'
-      }),
+      // configured once envvars.json has loaded, below
+      MatomoModule.forRoot({ mode: 'deferred' }),
       MatomoRouterModule.forRoot(),
       MenuModule,
       ApiModule.forRoot(() => new Configuration()),
@@ -50,9 +44,28 @@ bootstrapApplication(AppComponent, {
       AppRoutingModule,
     ),
     EnvironmentService,
-    provideAppInitializer(() => {
-      const initializerFn = (initAppFn)(inject(EnvironmentService));
-      return initializerFn();
+    provideAppInitializer(async () => {
+      const envService = inject(EnvironmentService);
+      const matomo = inject(MatomoInitializerService);
+      const tracker = inject(MatomoTracker);
+      await envService.loadEnvConfig("/assets/config/envvars.json");
+
+      if (envService.getEnvConfig().matomoMode === 'proxied') {
+        // Through this app's own nginx (locations written by entrypoint.sh), which ad
+        // blockers don't recognize, and without cookies, so no consent banner is needed.
+        tracker.disableCookies();
+        matomo.initializeTracker({
+          siteId: APP_IDENTITY.matomoSiteId,
+          trackerUrl: '/px/',
+          trackerUrlSuffix: 'h',
+          scriptUrl: '/px/s.js',
+        });
+      } else {
+        matomo.initializeTracker({
+          siteId: APP_IDENTITY.matomoSiteId,
+          trackerUrl: 'https://matomo.mmli2.ncsa.illinois.edu/',
+        });
+      }
     }),
     provideHttpClient(withInterceptorsFromDi()),
     provideStore(),

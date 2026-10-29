@@ -8,5 +8,7 @@
   "frontendOnly": "false",
 
   "environment": "local",
-  "prodUrl": ""
+  "prodUrl": "",
+
+  "matomoMode": "direct"
 }

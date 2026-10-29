@@ -8,6 +8,8 @@
   "frontendOnly": "${FRONTEND_ONLY}",
 
   "environment": "${ENVIRONMENT}",
-  "prodUrl": "${PROD_URL}"
+  "prodUrl": "${PROD_URL}",
+
+  "matomoMode": "${MATOMO_MODE}"
 }
 
