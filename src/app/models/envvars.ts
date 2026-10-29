@@ -13,4 +13,8 @@ export interface EnvVars {
   environment: string;
   // The released tool, linked from that banner. Empty for local development.
   prodUrl: string;
+
+  // 'proxied' sends Matomo hits through this app's nginx without cookies; anything else
+  // (including empty) sends them straight to matomo.mmli2.ncsa.illinois.edu.
+  matomoMode: string;
 }

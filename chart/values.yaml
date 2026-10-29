@@ -14,4 +14,6 @@ config:
   frontendOnly: "false"
   environment: local
   prodUrl: https://test.platform.moleculemaker.org
+  # 'proxied': Matomo hits go through this app's nginx, without cookies. Anything else: direct.
+  matomoMode: direct
 extraDeploy: []
