@@ -48,4 +48,4 @@ chart/charts/
 .secrets
 tests_output/
 # Claude Code worktrees
-.claude/
+.claude/worktrees/
